@@ -35,8 +35,8 @@ export function Home() {
               <p className="font-sans font-bold text-xl mb-6 leading-relaxed uppercase tracking-wide">
                 Since its inception, PANACHE has been the crucible where raw talent meets unparalleled opportunity. It's not just a college fest; it's a global phenomenon.
               </p>
-              <p className="font-sans font-medium text-lg mb-12 leading-relaxed uppercase tracking-wide opacity-80">
-                In 2026, we are pushing the limits further. With cutting-edge cyber challenges, breathtaking cultural performances, and intense technical hackathons, PANACHE 2K26 is designed to elevate the human experience.
+              <p className="font-sans font-medium text-sm sm:text-lg mb-8 sm:mb-12 leading-relaxed uppercase tracking-wide opacity-80">
+                This year, we prove to the world and Millennials that Gen-Z is out here doing everything. We don't just exist online—we dominate offline. Welcome to a multiverse of talent where creativity knows no bounds.
               </p>
               
               <div className="grid grid-cols-2 gap-6">
