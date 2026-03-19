@@ -1,0 +1,170 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-background: #050505;
+  --color-surface: #121212;
+  --color-primary: #CCFF00; /* Neon Lime */
+  --color-secondary: #FF00FF; /* Hot Pink */
+  --color-accent: #00FFFF; /* Cyan */
+  --color-text-main: #FFFFFF;
+  --color-text-muted: #A3A3A3;
+  --color-border: #333333;
+
+  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Anton", ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-main);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+a, button, input, textarea, select, .interactive {
+  cursor: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Brutalist Button */
+.btn-brutal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: transparent;
+  color: var(--color-text-main);
+  border: 2px solid var(--color-text-main);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.btn-brutal:hover {
+  background-color: var(--color-primary);
+  color: #000;
+  border-color: var(--color-primary);
+  box-shadow: 4px 4px 0px var(--color-secondary);
+  transform: translate(-2px, -2px);
+}
+.btn-brutal-primary {
+  background-color: var(--color-primary);
+  color: #000;
+  border-color: var(--color-primary);
+}
+.btn-brutal-primary:hover {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+  box-shadow: 4px 4px 0px var(--color-accent);
+}
+
+/* Brutalist Card */
+.card-brutal {
+  background-color: var(--color-surface);
+  border: 2px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+.card-brutal:hover {
+  border-color: var(--color-primary);
+  box-shadow: 8px 8px 0px var(--color-primary);
+  transform: translate(-4px, -4px);
+}
+
+.card-brutal-pink:hover {
+  border-color: var(--color-secondary);
+  box-shadow: 8px 8px 0px var(--color-secondary);
+}
+
+.card-brutal-cyan:hover {
+  border-color: var(--color-accent);
+  box-shadow: 8px 8px 0px var(--color-accent);
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+/* Glitch Effect */
+.glitch-text {
+  position: relative;
+}
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.8;
+}
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -2px 0 var(--color-secondary);
+  clip: rect(24px, 550px, 90px, 0);
+  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -2px 0 var(--color-accent);
+  clip: rect(85px, 550px, 140px, 0);
+  animation: glitch-anim 2.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(12px, 9999px, 34px, 0); }
+  20% { clip: rect(65px, 9999px, 89px, 0); }
+  40% { clip: rect(43px, 9999px, 12px, 0); }
+  60% { clip: rect(87px, 9999px, 56px, 0); }
+  80% { clip: rect(23px, 9999px, 78px, 0); }
+  100% { clip: rect(90px, 9999px, 11px, 0); }
+}
+
+@keyframes glitch-anim-2 {
+  0% { clip: rect(89px, 9999px, 23px, 0); }
+  20% { clip: rect(12px, 9999px, 76px, 0); }
+  40% { clip: rect(54px, 9999px, 34px, 0); }
+  60% { clip: rect(98px, 9999px, 12px, 0); }
+  80% { clip: rect(34px, 9999px, 87px, 0); }
+  100% { clip: rect(65px, 9999px, 45px, 0); }
+}
+
+/* Noise Texture */
+.bg-noise {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+  border-left: 1px solid var(--color-border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
