@@ -223,7 +223,7 @@ export function Dashboard() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-[#050505] border-b-4 border-[#333]">
-                      {['Name', 'Roll No', 'Course', 'Branch', 'Year', 'Mobile', 'Email', 'Status'].map(h => (
+                      {['Name', 'Roll No', 'Token', 'Course', 'Branch', 'Year', 'Mobile', 'Email', 'Status'].map(h => (
                         <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
                       ))}
                     </tr>
@@ -233,6 +233,7 @@ export function Dashboard() {
                       <tr key={s._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
                         <td className="p-4 font-space font-bold text-white text-sm">{s.fullName}</td>
                         <td className="p-4 font-space text-[#aaa] text-sm">{s.rollNo}</td>
+                        <td className="p-4 font-space font-bold text-[#CCFF00] text-sm tracking-[0.2em]">{s.token}</td>
                         <td className="p-4 font-space text-[#aaa] text-sm">{s.course}</td>
                         <td className="p-4 font-space text-[#aaa] text-sm">{s.branch}</td>
                         <td className="p-4 font-space text-[#aaa] text-sm">{s.year}</td>
@@ -246,7 +247,7 @@ export function Dashboard() {
                       </tr>
                     ))}
                     {students.length === 0 && (
-                      <tr><td colSpan={8} className="p-12 text-center font-space text-[#888] uppercase tracking-widest">No students registered yet</td></tr>
+                      <tr><td colSpan={9} className="p-12 text-center font-space text-[#888] uppercase tracking-widest">No students registered yet</td></tr>
                     )}
                   </tbody>
                 </table>
