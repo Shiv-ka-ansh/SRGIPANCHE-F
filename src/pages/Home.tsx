@@ -65,7 +65,7 @@ export function Home() {
                 <img 
                   src="https://picsum.photos/seed/festival/800/800" 
                   alt="Festival Crowd" 
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
+                  className="w-full h-full object-cover md:grayscale group-hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
                 />
                 <div className="absolute inset-0 bg-primary mix-blend-multiply opacity-50 group-hover:opacity-0 transition-opacity duration-500" />
               </div>

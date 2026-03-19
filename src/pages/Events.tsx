@@ -129,7 +129,7 @@ export function Events() {
                     <img 
                       src={event.image} 
                       alt={event.name}
-                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
+                      className="w-full h-full object-cover md:grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500" />
                     <div

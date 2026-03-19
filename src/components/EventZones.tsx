@@ -82,7 +82,7 @@ export function EventZones() {
             >
               <div className="h-48 overflow-hidden relative border-b-2 border-border group-hover:border-white transition-colors">
                 <div 
-                  className="absolute inset-0 bg-cover bg-center grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
+                  className="absolute inset-0 bg-cover bg-center md:grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-110"
                   style={{ backgroundImage: `url(${zone.image})` }}
                 />
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors" />

@@ -85,7 +85,7 @@ export function Team() {
                           <img 
                             src={member.image} 
                             alt={member.name} 
-                            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-100"
+                            className="w-full h-full object-cover md:grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-100"
                           />
                         </div>
                         

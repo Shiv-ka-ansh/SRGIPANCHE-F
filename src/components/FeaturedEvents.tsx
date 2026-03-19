@@ -88,7 +88,7 @@ export function FeaturedEvents() {
                   <img 
                     src={event.image} 
                     alt={event.name}
-                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
+                    className="w-full h-full object-cover md:grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500" />
                   <div className="absolute top-4 right-4 text-black px-4 py-1 text-sm font-anton uppercase tracking-widest border-2 border-black transform rotate-3 group-hover:rotate-0 transition-transform" style={{ backgroundColor: color }}>
