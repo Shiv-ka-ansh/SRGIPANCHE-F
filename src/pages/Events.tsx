@@ -5,6 +5,7 @@ import { Filter, Search, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { EVENT_CATEGORIES } from '../lib/eventData';
+import { EventModal } from '../components/EventModal';
 
 // Flatten all events for display
 const allEvents = Object.entries(EVENT_CATEGORIES).flatMap(([key, cat]) =>
@@ -15,6 +16,8 @@ const allEvents = Object.entries(EVENT_CATEGORIES).flatMap(([key, cat]) =>
     category: cat.label,
     categoryKey: key,
     color: cat.color,
+    image: cat.image,
+    description: ev.description,
     subEvents: ev.subEvents,
   }))
 );
@@ -22,6 +25,8 @@ const allEvents = Object.entries(EVENT_CATEGORIES).flatMap(([key, cat]) =>
 export function Events() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const categories = ['All', 'General', 'Technical', 'Cultural', 'Cyber'];
 
@@ -66,7 +71,7 @@ export function Events() {
           </div>
 
           {/* Filters */}
-          <div className="bg-[#121212] border-4 border-[#333] p-6 mb-16 flex flex-col md:flex-row gap-6 justify-between items-center sticky top-32 z-30" style={{ boxShadow: '12px 12px 0px #333' }}>
+          <div className="bg-[#121212] border-4 border-[#333] p-6 mb-16 flex flex-col md:flex-row gap-6 justify-between items-center top-32 z-30" style={{ boxShadow: '12px 12px 0px #333' }}>
             <div className="flex flex-wrap gap-3 justify-center md:justify-start">
               {categories.map(category => (
                 <button
@@ -105,8 +110,12 @@ export function Events() {
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  className="bg-[#121212] border-4 border-[#333] flex flex-col group hover:-translate-y-2 transition-all"
+                  className="bg-[#121212] border-4 border-[#333] flex flex-col group hover:-translate-y-2 transition-all cursor-pointer"
                   style={{ boxShadow: '8px 8px 0px #333' }}
+                  onClick={() => {
+                    setSelectedEvent(event);
+                    setIsModalOpen(true);
+                  }}
                   onMouseEnter={(e) => {
                     (e.currentTarget as HTMLElement).style.boxShadow = `8px 8px 0px ${event.color}`;
                     (e.currentTarget as HTMLElement).style.borderColor = event.color;
@@ -116,10 +125,13 @@ export function Events() {
                     (e.currentTarget as HTMLElement).style.borderColor = '#333';
                   }}
                 >
-                  <div className="h-40 relative overflow-hidden border-b-4 border-[#333]" style={{ backgroundColor: `${event.color}10` }}>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="font-anton text-5xl uppercase tracking-wider opacity-10" style={{ color: event.color }}>{event.category}</span>
-                    </div>
+                  <div className="h-40 relative overflow-hidden border-b-4 border-[#333]">
+                    <img 
+                      src={event.image} 
+                      alt={event.name}
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500" />
                     <div
                       className="absolute top-4 right-4 text-black px-4 py-1 text-xs font-anton uppercase tracking-widest border-2 border-black transform rotate-3 group-hover:rotate-0 transition-transform"
                       style={{ backgroundColor: event.color }}
@@ -129,12 +141,20 @@ export function Events() {
                   </div>
 
                   <div className="p-6 flex flex-col flex-grow">
-                    <h3 className="text-xl font-anton text-white mb-3 uppercase tracking-wide">{event.name}</h3>
+                    <h3 className="text-xl font-anton text-white mb-2 uppercase tracking-wide">{event.name}</h3>
+
+                    {event.description && (
+                      <p className="text-[#888] font-space text-[10px] uppercase tracking-wider mb-3 line-clamp-2 leading-relaxed">
+                        {event.description}
+                      </p>
+                    )}
 
                     {event.subEvents && (
-                      <p className="font-space text-xs text-[#888] uppercase tracking-wider mb-4">
-                        Games: {event.subEvents.join(', ')}
-                      </p>
+                      <div className="bg-[#050505] p-2 border-l-2 border-[#CCFF00] mb-4">
+                        <p className="font-space text-[10px] text-[#CCFF00] uppercase tracking-tighter">
+                          GAMES: {event.subEvents.join(' • ')}
+                        </p>
+                      </div>
                     )}
 
                     <div className="flex items-center justify-between mb-6 pt-4 border-t-2 border-[#333]">
@@ -161,6 +181,12 @@ export function Events() {
           )}
         </div>
       </div>
+
+      <EventModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        event={selectedEvent}
+      />
     </Layout>
   );
 }

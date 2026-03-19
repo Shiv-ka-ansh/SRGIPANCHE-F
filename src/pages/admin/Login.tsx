@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/auth';
 import api from '../../lib/api';
 import toast from 'react-hot-toast';
-import { Lock } from 'lucide-react';
+import { Lock, AlertCircle, X } from 'lucide-react';
 import { PasswordInput } from '../../components/PasswordInput';
 
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -32,9 +34,10 @@ export function Login() {
         }
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Login failed', {
-        style: { background: '#FF00FF', color: '#050505', borderRadius: '0', border: '4px solid #050505' }
-      });
+      const errorMessage = error.response?.data?.error || 'Login failed';
+      setErrorMsg(errorMessage);
+      setShowError(true);
+      // Removed duplicate toast because of our custom right-side alert
     } finally {
       setLoading(false);
     }
@@ -42,6 +45,30 @@ export function Login() {
 
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4">
+      {showError && (
+        <div className="fixed top-8 right-8 z-50">
+          <div className="bg-[#121212] border-4 border-[#FF00FF] p-6 pr-12 max-w-sm w-full relative"
+               style={{ boxShadow: '8px 8px 0px #FF00FF' }}>
+            <button 
+              onClick={() => setShowError(false)}
+              className="absolute top-2 right-2 text-[#FF00FF] hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+            <div className="flex flex-row items-center gap-4">
+              <AlertCircle size={40} color="#FF00FF" className="animate-pulse flex-shrink-0" />
+              <div className="flex flex-col">
+                <h2 className="font-anton text-2xl text-[#FF00FF] mb-1 uppercase tracking-wide">Login Error</h2>
+                <p className="font-space text-white text-sm font-bold uppercase mb-1">
+                  {errorMsg}
+                </p>
+                <p className="font-space text-[#ccc] text-xs">Please verify your credentials.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="bg-[#121212] border-4 border-[#CCFF00] p-8 max-w-md w-full"
            style={{ boxShadow: '12px 12px 0px #CCFF00' }}>
         <div className="flex items-center justify-center mb-8">

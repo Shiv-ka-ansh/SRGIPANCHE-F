@@ -101,7 +101,6 @@ export function Register() {
       <Toaster position="top-right" />
       <div className="pt-24 pb-32 min-h-screen bg-[#050505]">
         <div className="container mx-auto px-6 md:px-12 max-w-3xl">
-
           <div className="text-center mb-16">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -126,14 +125,19 @@ export function Register() {
             transition={{ delay: 0.2 }}
             onSubmit={handleSubmit}
             className="bg-[#121212] border-4 border-[#333] p-8 md:p-12 space-y-6"
-            style={{ boxShadow: '12px 12px 0px #333' }}
+            style={{ boxShadow: "12px 12px 0px #333" }}
           >
             {/* Full Name */}
             <div>
-              <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Full Name</label>
+              <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                Full Name
+              </label>
               <input
-                type="text" name="fullName" required
-                value={formData.fullName} onChange={handleChange}
+                type="text"
+                name="fullName"
+                required
+                value={formData.fullName}
+                onChange={handleChange}
                 className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
                 placeholder="YOUR FULL NAME"
               />
@@ -142,30 +146,34 @@ export function Register() {
             {/* Roll No + Course */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Roll Number</label>
+                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                  Roll Number
+                </label>
                 <input
-                  type="text" name="rollNo" required
-                  value={formData.rollNo} onChange={handleChange}
+                  type="text"
+                  name="rollNo"
+                  required
+                  value={formData.rollNo}
+                  onChange={handleChange}
                   className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors uppercase"
                   placeholder="E.G. 2200123"
                 />
               </div>
               <div>
-                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Course</label>
+                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                  Course
+                </label>
                 <select
-                  name="course" required
-                  value={formData.course} onChange={handleChange}
+                  name="course"
+                  required
+                  value={formData.course}
+                  onChange={handleChange}
                   className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
                 >
                   <option value="">Select Course</option>
                   <option value="B.Tech">B.Tech</option>
                   <option value="M.Tech">M.Tech</option>
-                  <option value="BCA">BCA</option>
-                  <option value="MCA">MCA</option>
-                  <option value="BBA">BBA</option>
-                  <option value="MBA">MBA</option>
-                  <option value="B.Sc">B.Sc</option>
-                  <option value="M.Sc">M.Sc</option>
+                  <option value="Polytechnic">Polytechnic</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -174,19 +182,29 @@ export function Register() {
             {/* Branch + Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Branch</label>
+                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                  Branch
+                </label>
                 <input
-                  type="text" name="branch" required
-                  value={formData.branch} onChange={handleChange}
+                  type="text"
+                  name="branch"
+                  required
+                  value={formData.branch}
+                  onChange={handleChange}
                   className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
                   placeholder="E.G. CSE, ECE, ME"
                 />
               </div>
               <div>
-                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Section</label>
+                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                  Section
+                </label>
                 <input
-                  type="text" name="section" required
-                  value={formData.section} onChange={handleChange}
+                  type="text"
+                  name="section"
+                  required
+                  value={formData.section}
+                  onChange={handleChange}
                   className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
                   placeholder="E.G. A, B, C"
                 />
@@ -196,10 +214,14 @@ export function Register() {
             {/* Year + Mobile */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Year</label>
+                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                  Year
+                </label>
                 <select
-                  name="year" required
-                  value={formData.year} onChange={handleChange}
+                  name="year"
+                  required
+                  value={formData.year}
+                  onChange={handleChange}
                   className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
                 >
                   <option value="">Select Year</option>
@@ -211,10 +233,15 @@ export function Register() {
                 </select>
               </div>
               <div>
-                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Mobile Number</label>
+                <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                  Mobile Number
+                </label>
                 <input
-                  type="tel" name="mobileNo" required
-                  value={formData.mobileNo} onChange={handleChange}
+                  type="tel"
+                  name="mobileNo"
+                  required
+                  value={formData.mobileNo}
+                  onChange={handleChange}
                   className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
                   placeholder="10-DIGIT MOBILE"
                   maxLength={10}
@@ -224,10 +251,15 @@ export function Register() {
 
             {/* Email */}
             <div>
-              <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">Email Address</label>
+              <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
+                Email Address
+              </label>
               <input
-                type="email" name="email" required
-                value={formData.email} onChange={handleChange}
+                type="email"
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
                 className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
                 placeholder="YOUR@EMAIL.COM"
               />
@@ -238,11 +270,14 @@ export function Register() {
               disabled={loading}
               className="w-full font-anton text-2xl uppercase tracking-widest bg-[#CCFF00] text-[#050505] py-5 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_#00FFFF] transition-all disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none flex items-center justify-center gap-3"
             >
-              {loading ? <Loader2 className="animate-spin" size={28} /> : <UserPlus size={28} />}
-              {loading ? 'Registering...' : 'Register →'}
+              {loading ? (
+                <Loader2 className="animate-spin" size={28} />
+              ) : (
+                <UserPlus size={28} />
+              )}
+              {loading ? "Registering..." : "Register →"}
             </button>
           </motion.form>
-
         </div>
       </div>
     </Layout>

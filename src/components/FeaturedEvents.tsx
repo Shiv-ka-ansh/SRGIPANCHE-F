@@ -4,13 +4,17 @@ import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { MagneticButton } from './MagneticButton';
 import { EVENT_CATEGORIES } from '../lib/eventData';
+import { EventModal } from './EventModal';
 
 export function FeaturedEvents() {
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Display a selection of events from the hardcoded data
   const featuredList = [
-    { ...EVENT_CATEGORIES.technical.events.find(e => e.name === 'WAR OF MACHINES')!, category: 'TECHNICAL' },
-    { ...EVENT_CATEGORIES.cultural.events.find(e => e.name === 'TANZ & TWIST (Group)')!, category: 'CULTURAL' },
-    { ...EVENT_CATEGORIES.cyber.events.find(e => e.name === 'ONLINE GAMING')!, category: 'CYBER' },
+    { ...EVENT_CATEGORIES.technical.events.find(e => e.name === 'WAR OF MACHINES')!, category: 'TECHNICAL', image: EVENT_CATEGORIES.technical.image, description: EVENT_CATEGORIES.technical.events.find(e => e.name === 'WAR OF MACHINES')?.description },
+    { ...EVENT_CATEGORIES.cultural.events.find(e => e.name === 'TANZ & TWIST (Group)')!, category: 'CULTURAL', image: EVENT_CATEGORIES.cultural.image, description: EVENT_CATEGORIES.cultural.events.find(e => e.name === 'TANZ & TWIST (Group)')?.description },
+    { ...EVENT_CATEGORIES.cyber.events.find(e => e.name === 'ONLINE GAMING')!, category: 'CYBER', image: EVENT_CATEGORIES.cyber.image, description: EVENT_CATEGORIES.cyber.events.find(e => e.name === 'ONLINE GAMING')?.description },
   ];
 
   const getCatColor = (cat: string) => {
@@ -63,9 +67,13 @@ export function FeaturedEvents() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-[#121212] border-4 border-[#333] flex flex-col group hover:-translate-y-2 transition-all"
+                className="bg-[#121212] border-4 border-[#333] flex flex-col group hover:-translate-y-2 transition-all cursor-pointer"
                 style={{ 
                   boxShadow: '8px 8px 0px #333',
+                }}
+                onClick={() => {
+                  setSelectedEvent(event);
+                  setIsModalOpen(true);
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.boxShadow = `8px 8px 0px ${color}`;
@@ -76,19 +84,28 @@ export function FeaturedEvents() {
                   (e.currentTarget as HTMLElement).style.borderColor = '#333';
                 }}
               >
-                <div className="h-56 relative overflow-hidden border-b-4 border-[#333]" style={{ backgroundColor: `${color}15` }}>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="font-anton text-6xl uppercase tracking-wider opacity-20" style={{ color }}>{event.category}</span>
-                  </div>
+                <div className="h-56 relative overflow-hidden border-b-4 border-[#333]">
+                  <img 
+                    src={event.image} 
+                    alt={event.name}
+                    className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500" />
                   <div className="absolute top-4 right-4 text-black px-4 py-1 text-sm font-anton uppercase tracking-widest border-2 border-black transform rotate-3 group-hover:rotate-0 transition-transform" style={{ backgroundColor: color }}>
                     {event.category}
                   </div>
                 </div>
                 
                 <div className="p-6 flex-grow flex flex-col">
-                  <h3 className="text-2xl font-anton text-white mb-4 uppercase tracking-wide group-hover:transition-colors" style={{ '--hover-color': color } as any}>
+                  <h3 className="text-2xl font-anton text-white mb-2 uppercase tracking-wide group-hover:transition-colors" style={{ '--hover-color': color } as any}>
                     {event.name}
                   </h3>
+                  
+                  {event.description && (
+                    <p className="text-[#888] font-space text-xs uppercase tracking-wider mb-4 line-clamp-2">
+                      {event.description}
+                    </p>
+                  )}
                   
                   <div className="space-y-4 mb-8 pt-6 border-t-2 border-[#333]">
                     <div className="flex items-center justify-between font-space text-sm text-white uppercase tracking-wider">
@@ -114,6 +131,12 @@ export function FeaturedEvents() {
           })}
         </div>
       </div>
+
+      <EventModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        event={selectedEvent}
+      />
     </section>
   );
 }

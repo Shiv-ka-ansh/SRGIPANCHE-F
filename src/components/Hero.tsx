@@ -2,16 +2,22 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, MapPin, Zap } from 'lucide-react';
+import { cn } from '../lib/utils';
 import { MagneticButton } from './MagneticButton';
 
 export function Hero() {
   const calculateTimeLeft = () => {
-    const targetDate = new Date('2026-10-15T09:00:00').getTime();
+    const targetDate = new Date('2026-03-28T09:00:00').getTime();
+    const endDate = new Date('2026-03-31T23:59:59').getTime();
     const now = new Date().getTime();
+    
     const distance = targetDate - now;
 
     if (distance < 0) {
-      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+      if (now < endDate) {
+        return { days: 0, hours: 0, minutes: 0, seconds: 0, isLive: true };
+      }
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, isEnded: true };
     }
 
     return {
@@ -19,6 +25,8 @@ export function Hero() {
       hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
       minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
       seconds: Math.floor((distance % (1000 * 60)) / 1000),
+      isLive: false,
+      isEnded: false
     };
   };
 
@@ -75,9 +83,13 @@ export function Hero() {
               transition={{ duration: 0.6, ease: 'easeOut' }}
               className="mb-8 border-2 border-white/20 px-4 py-2 flex items-center gap-4 font-sans font-bold uppercase tracking-widest text-sm bg-surface/50 backdrop-blur-sm"
             >
-              <span className="flex items-center gap-2 text-primary"><Calendar size={16} /> OCT 15-18</span>
+              <span className="flex items-center gap-2 text-primary"><Calendar size={16} /> 
+              MARCH 28-31
+              </span>
               <span className="w-1.5 h-1.5 bg-white rounded-full" />
-              <span className="flex items-center gap-2 text-secondary"><MapPin size={16} /> TECH CAMPUS</span>
+              <span className="flex items-center gap-2 text-secondary"><MapPin size={16} /> 
+              SRGI COLLEGE CAMPUS
+              </span>
             </motion.div>
 
             <motion.h1
@@ -150,17 +162,20 @@ export function Hero() {
               className="absolute -bottom-10 -left-4 lg:-left-20 bg-surface border-4 border-primary p-6 z-20 shadow-[12px_12px_0px_#FF00FF]"
             >
               <div className="font-sans font-bold text-primary uppercase tracking-widest mb-4 text-sm flex items-center gap-2">
-                <span className="w-2 h-2 bg-primary rounded-full animate-pulse" /> SYSTEM LAUNCH IN
+                <span className={cn("w-2 h-2 rounded-full animate-pulse", timeLeft.isLive ? "bg-accent" : "bg-primary")} />
+                {timeLeft.isEnded ? "SYSTEM OFFLINE" : timeLeft.isLive ? "PROTOCOL ACTIVE" : "SYSTEM LAUNCH IN"}
               </div>
               <div className="flex gap-4 md:gap-6">
-                {Object.entries(timeLeft).map(([unit, value]) => (
-                  <div key={unit} className="flex flex-col items-center">
-                    <span className="text-4xl md:text-5xl font-display text-white leading-none">
-                      {value.toString().padStart(2, '0')}
-                    </span>
-                    <span className="text-xs font-sans font-bold text-text-muted uppercase tracking-wider mt-1">{unit}</span>
-                  </div>
-                ))}
+                {Object.entries(timeLeft)
+                  .filter(([key]) => typeof timeLeft[key as keyof typeof timeLeft] === 'number')
+                  .map(([unit, value]) => (
+                    <div key={unit} className="flex flex-col items-center">
+                      <span className="text-4xl md:text-5xl font-display text-white leading-none">
+                        {value.toString().padStart(2, '0')}
+                      </span>
+                      <span className="text-xs font-sans font-bold text-text-muted uppercase tracking-wider mt-1">{unit}</span>
+                    </div>
+                  ))}
               </div>
             </motion.div>
           </div>

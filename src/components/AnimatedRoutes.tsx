@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Home } from '../pages/Home';
 import { Events } from '../pages/Events';
 import { Schedule } from '../pages/Schedule';
@@ -17,42 +17,44 @@ export function AnimatedRoutes() {
 
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        {/* Public Routes */}
-        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
-        <Route path="/events" element={<PageTransition><Events /></PageTransition>} />
-        <Route path="/schedule" element={<PageTransition><Schedule /></PageTransition>} />
-        <Route path="/team" element={<PageTransition><Team /></PageTransition>} />
-        <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
-        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+      <motion.div key={location.pathname}>
+        <Routes location={location}>
+          {/* Public Routes */}
+          <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+          <Route path="/events" element={<PageTransition><Events /></PageTransition>} />
+          <Route path="/schedule" element={<PageTransition><Schedule /></PageTransition>} />
+          <Route path="/team" element={<PageTransition><Team /></PageTransition>} />
+          <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
+          <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
 
-        {/* Auth Routes */}
-        <Route path="/admin/login" element={<PageTransition><AdminLogin /></PageTransition>} />
-        <Route path="/superadmin/login" element={<PageTransition><AdminLogin /></PageTransition>} />
+          {/* Auth Routes */}
+          <Route path="/admin/login" element={<PageTransition><AdminLogin /></PageTransition>} />
+          <Route path="/superadmin/login" element={<PageTransition><AdminLogin /></PageTransition>} />
 
-        {/* Admin Routes */}
-        <Route 
-          path="/admin/dashboard" 
-          element={
-            <ProtectedRoute requireAdmin>
-              <PageTransition><AdminDashboard /></PageTransition>
-            </ProtectedRoute>
-          } 
-        />
+          {/* Admin Routes */}
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute requireAdmin>
+                <PageTransition><AdminDashboard /></PageTransition>
+              </ProtectedRoute>
+            } 
+          />
 
-        {/* SuperAdmin Routes */}
-        <Route 
-          path="/superadmin/dashboard" 
-          element={
-            <ProtectedRoute requireSuperAdmin>
-              <PageTransition><SuperAdminDashboard /></PageTransition>
-            </ProtectedRoute>
-          } 
-        />
+          {/* SuperAdmin Routes */}
+          <Route 
+            path="/superadmin/dashboard" 
+            element={
+              <ProtectedRoute requireSuperAdmin>
+                <PageTransition><SuperAdminDashboard /></PageTransition>
+              </ProtectedRoute>
+            } 
+          />
 
-        {/* Fallback */}
-        <Route path="*" element={<PageTransition><Home /></PageTransition>} />
-      </Routes>
+          {/* Fallback */}
+          <Route path="*" element={<PageTransition><Home /></PageTransition>} />
+        </Routes>
+      </motion.div>
     </AnimatePresence>
   );
 }

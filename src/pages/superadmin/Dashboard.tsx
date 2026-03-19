@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../../components/Layout';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart3, Users, Calendar, Download, Plus, Trash2, Edit, Loader2, ShieldCheck,
-  DollarSign, UserPlus, FileDown, RefreshCw, LogOut, Eye, EyeOff
+  UserPlus, FileDown, LogOut, Ticket, Search, X
 } from 'lucide-react';
 import { PasswordInput } from '../../components/PasswordInput';
 import { useAuth } from '../../lib/auth';
 import api from '../../lib/api';
 import toast, { Toaster } from 'react-hot-toast';
 
-type Tab = 'overview' | 'students' | 'registrations' | 'schedule' | 'users' | 'export';
+type Tab = 'overview' | 'students' | 'events' | 'registrations' | 'schedule' | 'users' | 'export';
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'overview', label: 'Overview', icon: <BarChart3 size={18} /> },
   { key: 'students', label: 'Students', icon: <Users size={18} /> },
+  { key: 'events', label: 'Events Catalog', icon: <Ticket size={18} /> },
   { key: 'registrations', label: 'Registrations', icon: <Calendar size={18} /> },
   { key: 'schedule', label: 'Schedule', icon: <Calendar size={18} /> },
   { key: 'users', label: 'Admin Users', icon: <ShieldCheck size={18} /> },
@@ -28,14 +29,35 @@ export function Dashboard() {
 
   // Overview / Analytics
   const [stats, setStats] = useState<any>(null);
+  
   // Students
   const [students, setStudents] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [branchFilter, setBranchFilter] = useState('All');
+  const [editingStudent, setEditingStudent] = useState<any>(null);
+
+  // Events
+  const [eventsList, setEventsList] = useState<any[]>([]);
+  const [editingEvent, setEditingEvent] = useState<string | null>(null);
+  const [eventForm, setEventForm] = useState({ 
+    category: '', 
+    name: '', 
+    amount: 0, 
+    subEvents: '', 
+    color: '#00FFFF',
+    description: '',
+    rulesText: '',
+    coordinatorsText: ''
+  });
+
   // Registrations
   const [registrations, setRegistrations] = useState<any[]>([]);
+  
   // Schedule
   const [scheduleEntries, setScheduleEntries] = useState<any[]>([]);
   const [scheduleForm, setScheduleForm] = useState({ day: 'Day 1', date: '', time: '', eventName: '', category: '', venue: '', description: '', order: 0 });
   const [editingSchedule, setEditingSchedule] = useState<string | null>(null);
+  
   // Users
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '', role: 'admin' });
@@ -43,6 +65,7 @@ export function Dashboard() {
   useEffect(() => {
     if (activeTab === 'overview') fetchAnalytics();
     if (activeTab === 'students') fetchStudents();
+    if (activeTab === 'events') fetchEventsList();
     if (activeTab === 'registrations') fetchRegistrations();
     if (activeTab === 'schedule') fetchSchedule();
     if (activeTab === 'users') fetchUsers();
@@ -60,10 +83,77 @@ export function Dashboard() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/students');
+      const { data } = await api.get('/students', { params: { search: searchQuery, branch: branchFilter }});
       setStudents(data.students);
     } catch { toast.error('Failed to load students'); }
     setLoading(false);
+  };
+
+  const handleUpdateStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStudent) return;
+    try {
+      await api.put(`/students/${editingStudent._id}`, editingStudent);
+      toast.success('Student updated');
+      setEditingStudent(null);
+      fetchStudents();
+    } catch { toast.error('Failed to update student'); }
+  };
+
+  const fetchEventsList = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/events');
+      setEventsList(data.events);
+    } catch { toast.error('Failed to load events'); }
+    setLoading(false);
+  };
+
+  const handleSaveEvent = async () => {
+    try {
+      const subEventsArray = eventForm.subEvents ? eventForm.subEvents.split(',').map(s => s.trim()).filter(Boolean) : [];
+      const rulesArray = eventForm.rulesText ? eventForm.rulesText.split('\n').map(s => s.trim()).filter(Boolean) : [];
+      const coordinatorsArray = eventForm.coordinatorsText ? eventForm.coordinatorsText.split('\n').map(line => {
+        const [name, phone] = line.split(':').map(s => s.trim());
+        return name ? { name, phone: phone || '' } : null;
+      }).filter(Boolean) : [];
+
+      const payload = { 
+        ...eventForm, 
+        subEvents: subEventsArray,
+        rules: rulesArray,
+        coordinators: coordinatorsArray
+      };
+
+      if (editingEvent) {
+        await api.put(`/events/${editingEvent}`, payload);
+        toast.success('Event updated');
+      } else {
+        await api.post('/events', payload);
+        toast.success('Event added');
+      }
+      setEditingEvent(null);
+      setEventForm({ 
+        category: '', 
+        name: '', 
+        amount: 0, 
+        subEvents: '', 
+        color: '#00FFFF',
+        description: '',
+        rulesText: '',
+        coordinatorsText: ''
+      });
+      fetchEventsList();
+    } catch { toast.error('Failed to save event'); }
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    if (!confirm('Delete this event?')) return;
+    try {
+      await api.delete(`/events/${id}`);
+      toast.success('Deleted');
+      fetchEventsList();
+    } catch { toast.error('Failed to delete'); }
   };
 
   const fetchRegistrations = async () => {
@@ -81,15 +171,6 @@ export function Dashboard() {
       const { data } = await api.get('/schedule');
       setScheduleEntries(data.entries);
     } catch { toast.error('Failed to load schedule'); }
-    setLoading(false);
-  };
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get('/users');
-      setAdminUsers(data.users);
-    } catch { toast.error('Failed to load users'); }
     setLoading(false);
   };
 
@@ -117,17 +198,28 @@ export function Dashboard() {
     } catch { toast.error('Failed to delete'); }
   };
 
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get('/users');
+      setAdminUsers(data.users);
+    } catch { toast.error('Failed to load users'); }
+    setLoading(false);
+  };
+
   const handleCreateAdmin = async () => {
     try {
       await api.post('/users', newAdmin);
       toast.success('Admin created');
       setNewAdmin({ name: '', email: '', password: '', role: 'admin' });
       fetchUsers();
-    } catch (err: any) { toast.error(err.response?.data?.error || 'Failed to create admin'); }
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to create admin');
+    }
   };
 
   const handleDeleteUser = async (id: string) => {
-    if (!confirm('Delete this admin user?')) return;
+    if (!confirm('Delete this user?')) return;
     try {
       await api.delete(`/users/${id}`);
       toast.success('Deleted');
@@ -141,7 +233,7 @@ export function Dashboard() {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = type === 'csv' ? 'panache-2k26-registrations.csv' : 'panache-2k26-registrations.xlsx';
+      a.download = `panache-export.${type === 'csv' ? 'csv' : 'xlsx'}`;
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success(`${type.toUpperCase()} downloaded`);
@@ -154,7 +246,7 @@ export function Dashboard() {
     <Layout>
       <Toaster position="top-right" />
       <div className="pt-24 pb-32 min-h-screen bg-[#050505]">
-        <div className="container mx-auto px-4 md:px-8">
+        <div className="container mx-auto px-4 md:px-8 max-w-7xl">
 
           {/* Header */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -177,7 +269,7 @@ export function Dashboard() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`font-space font-bold text-xs uppercase tracking-widest px-4 py-3 flex items-center gap-2 border-2 transition-all ${
                   activeTab === tab.key
-                    ? 'bg-[#CCFF00] text-[#050505] border-[#050505]'
+                    ? 'bg-[#CCFF00] text-[#050505] border-[#050505] shadow-[4px_4px_0px_#050505]'
                     : 'bg-transparent text-[#888] border-transparent hover:text-white'
                 }`}
               >
@@ -218,39 +310,171 @@ export function Dashboard() {
 
           {/* ==== STUDENTS ==== */}
           {!loading && activeTab === 'students' && (
-            <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-[#050505] border-b-4 border-[#333]">
-                      {['Name', 'Roll No', 'Token', 'Course', 'Branch', 'Year', 'Mobile', 'Email', 'Status'].map(h => (
-                        <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {students.map((s: any) => (
-                      <tr key={s._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
-                        <td className="p-4 font-space font-bold text-white text-sm">{s.fullName}</td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{s.rollNo}</td>
-                        <td className="p-4 font-space font-bold text-[#CCFF00] text-sm tracking-[0.2em]">{s.token}</td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{s.course}</td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{s.branch}</td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{s.year}</td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{s.mobileNo}</td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{s.email}</td>
-                        <td className="p-4">
-                          <span className={`font-space font-bold text-xs uppercase px-3 py-1 border-2 ${s.status === 'processed' ? 'border-[#CCFF00] text-[#CCFF00]' : 'border-[#888] text-[#888]'}`}>
-                            {s.status}
-                          </span>
-                        </td>
+            <div className="space-y-6">
+              <div className="bg-[#121212] border-4 border-[#333] p-6 flex flex-col md:flex-row gap-4 justify-between" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <div className="flex gap-4 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-80">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888]" size={18} />
+                    <input
+                      type="text"
+                      placeholder="Search Name, Roll No..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-[#050505] border-2 border-[#333] py-3 pl-12 pr-4 text-white font-space uppercase text-sm focus:border-[#CCFF00] outline-none"
+                    />
+                  </div>
+                  <button onClick={fetchStudents} className="bg-[#CCFF00] text-[#050505] font-anton px-6 border-2 border-transparent hover:bg-white transition-colors">
+                    Search
+                  </button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-space font-bold uppercase text-[#888] text-xs">Branch:</span>
+                  <select
+                    value={branchFilter}
+                    onChange={(e) => setBranchFilter(e.target.value)}
+                    className="bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                  >
+                    <option value="All">All Branches</option>
+                    <option value="BTECH">B.Tech</option>
+                    <option value="BCA">BCA</option>
+                    <option value="BBA">BBA</option>
+                    <option value="MBA">MBA</option>
+                    <option value="POLYTECHNIC">Polytechnic</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-[#050505] border-b-4 border-[#333]">
+                        {['Name', 'Roll No', 'Token', 'Course', 'Branch', 'Mobile', 'Email', 'Actions'].map(h => (
+                          <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                    {students.length === 0 && (
-                      <tr><td colSpan={9} className="p-12 text-center font-space text-[#888] uppercase tracking-widest">No students registered yet</td></tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {students.map((s: any) => (
+                        <tr key={s._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
+                          <td className="p-4 font-space font-bold text-white text-sm">{s.fullName}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{s.rollNo}</td>
+                          <td className="p-4 font-space font-bold text-[#CCFF00] text-sm tracking-[0.2em]">{s.token}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{s.course}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{s.branch}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{s.mobileNo}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{s.email}</td>
+                          <td className="p-4">
+                            <button
+                              onClick={() => setEditingStudent(s)}
+                              className="font-space font-bold text-xs uppercase tracking-widest px-3 py-1 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-2"
+                            >
+                              <Edit size={12} /> Edit
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {students.length === 0 && (
+                        <tr><td colSpan={9} className="p-12 text-center font-space text-[#888] uppercase tracking-widest">No students found</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==== EVENTS CATALOG ==== */}
+          {!loading && activeTab === 'events' && (
+            <div className="space-y-8">
+              <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">{editingEvent ? 'Edit Event' : 'Add New Event'}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  <input placeholder="Category" value={eventForm.category} onChange={e => setEventForm({...eventForm, category: e.target.value})} className={inputClass} />
+                  <input placeholder="Event Name" value={eventForm.name} onChange={e => setEventForm({...eventForm, name: e.target.value})} className={inputClass} />
+                  <input type="number" placeholder="Entry Amount" value={eventForm.amount || ''} onChange={e => setEventForm({...eventForm, amount: Number(e.target.value)})} className={inputClass} />
+                  <div className="flex gap-2 items-center bg-[#050505] border-2 border-[#333] p-3 focus-within:border-[#CCFF00]">
+                    <span className="font-space text-[#888] text-xs uppercase tracking-widest">Color</span>
+                    <input type="color" value={eventForm.color} onChange={e => setEventForm({...eventForm, color: e.target.value})} className="w-6 h-6 border-0 bg-transparent cursor-pointer ml-auto" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input placeholder="Sub Events (comma separated)" value={eventForm.subEvents} onChange={e => setEventForm({...eventForm, subEvents: e.target.value})} className={inputClass} />
+                  <textarea placeholder="Event Description" value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} className={inputClass + " h-14"} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <textarea placeholder="Rules (one per line)" value={eventForm.rulesText} onChange={e => setEventForm({...eventForm, rulesText: e.target.value})} className={inputClass + " h-24"} />
+                  <textarea placeholder="Coordinators (format Name:Phone, one per line)" value={eventForm.coordinatorsText} onChange={e => setEventForm({...eventForm, coordinatorsText: e.target.value})} className={inputClass + " h-24"} />
+                </div>
+                <div className="flex gap-4">
+                  <button onClick={handleSaveEvent} className="bg-[#CCFF00] text-[#050505] font-space font-bold text-sm uppercase px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2">
+                    <Plus size={16} /> {editingEvent ? 'Update' : 'Add Event'}
+                  </button>
+                  {editingEvent && (
+                    <button onClick={() => { 
+                      setEditingEvent(null); 
+                      setEventForm({ 
+                        category: '', 
+                        name: '', 
+                        amount: 0, 
+                        subEvents: '', 
+                        color: '#00FFFF',
+                        description: '',
+                        rulesText: '',
+                        coordinatorsText: ''
+                      }); 
+                    }} className="font-space font-bold text-sm uppercase px-6 py-3 border-2 border-[#888] text-[#888] hover:text-white hover:border-white transition-colors">
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-[#050505] border-b-4 border-[#333]">
+                        {['Category', 'Event Name', 'Amount', 'Description', 'Sub Events', 'Color', 'Actions'].map(h => (
+                          <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {eventsList.map((ev: any) => (
+                        <tr key={ev._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
+                          <td className="p-4 font-space font-bold text-white text-sm uppercase">{ev.category}</td>
+                          <td className="p-4 font-space font-bold text-white text-sm uppercase">{ev.name}</td>
+                          <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{ev.amount}</td>
+                          <td className="p-4 font-space text-[#aaa] text-[10px] uppercase line-clamp-2 max-w-xs">{ev.description || '-'}</td>
+                          <td className="p-4 font-space text-[#aaa] text-xs uppercase">{ev.subEvents?.join(', ') || '-'}</td>
+                          <td className="p-4">
+                            <div className="w-6 h-6 border-2 border-white" style={{ backgroundColor: ev.color }}></div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex gap-2">
+                              <button onClick={() => { 
+                                setEditingEvent(ev._id); 
+                                setEventForm({
+                                  ...ev, 
+                                  subEvents: ev.subEvents?.join(', ') || '',
+                                  rulesText: ev.rules?.join('\n') || '',
+                                  coordinatorsText: ev.coordinators?.map((c: any) => `${c.name}:${c.phone}`).join('\n') || '',
+                                  description: ev.description || ''
+                                }); 
+                              }} className="p-2 border border-[#CCFF00] text-[#CCFF00] hover:bg-[#CCFF00] hover:text-[#050505] transition-colors">
+                                <Edit size={14} />
+                              </button>
+                              <button onClick={() => handleDeleteEvent(ev._id)} className="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -262,7 +486,7 @@ export function Dashboard() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-[#050505] border-b-4 border-[#333]">
-                      {['Student', 'Roll No', 'Events', 'Total', 'Processed By', 'Date'].map(h => (
+                      {['Student/Team Leader', 'Roll No', 'Type', 'Events', 'Total', 'Processed By', 'Date'].map(h => (
                         <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
                       ))}
                     </tr>
@@ -270,19 +494,27 @@ export function Dashboard() {
                   <tbody>
                     {registrations.map((r: any) => (
                       <tr key={r._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
-                        <td className="p-4 font-space font-bold text-white text-sm">{r.studentName}</td>
+                        <td className="p-4">
+                          <div className="font-space font-bold text-white text-sm">{r.studentName}</div>
+                          {r.isGroup && r.groupMembers && r.groupMembers.length > 0 && (
+                            <div className="font-space text-[#aaa] text-xs mt-1">+{r.groupMembers.length} members</div>
+                          )}
+                        </td>
                         <td className="p-4 font-space text-[#aaa] text-sm">{r.rollNo}</td>
+                        <td className="p-4">
+                            {r.isGroup 
+                              ? <span className="text-[#FF00FF] font-space text-xs font-bold border border-[#FF00FF] px-2 py-1 uppercase">Group</span>
+                              : <span className="text-[#00FFFF] font-space text-xs font-bold border border-[#00FFFF] px-2 py-1 uppercase">Single</span>
+                            }
+                        </td>
                         <td className="p-4 font-space text-[#aaa] text-sm">
                           {r.events.map((e: any) => e.eventName).join(', ')}
                         </td>
                         <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{r.totalAmount}</td>
                         <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td>
-                        <td className="p-4 font-space text-[#888] text-sm">{new Date(r.processedAt).toLocaleDateString()}</td>
+                        <td className="p-4 font-space text-[#888] text-xs">{new Date(r.processedAt).toLocaleDateString()}</td>
                       </tr>
                     ))}
-                    {registrations.length === 0 && (
-                      <tr><td colSpan={6} className="p-12 text-center font-space text-[#888] uppercase tracking-widest">No event registrations yet</td></tr>
-                    )}
                   </tbody>
                 </table>
               </div>
@@ -292,7 +524,6 @@ export function Dashboard() {
           {/* ==== SCHEDULE MANAGER ==== */}
           {!loading && activeTab === 'schedule' && (
             <div className="space-y-8">
-              {/* Add / Edit Form */}
               <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
                 <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">{editingSchedule ? 'Edit Entry' : 'Add Schedule Entry'}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -301,8 +532,8 @@ export function Dashboard() {
                     <option value="Day 2">Day 2</option>
                     <option value="Day 3">Day 3</option>
                   </select>
-                  <input placeholder="Date (e.g. Oct 15, 2026)" value={scheduleForm.date} onChange={e => setScheduleForm({...scheduleForm, date: e.target.value})} className={inputClass} />
-                  <input placeholder="Time (e.g. 10:00 AM)" value={scheduleForm.time} onChange={e => setScheduleForm({...scheduleForm, time: e.target.value})} className={inputClass} />
+                  <input placeholder="Date" value={scheduleForm.date} onChange={e => setScheduleForm({...scheduleForm, date: e.target.value})} className={inputClass} />
+                  <input placeholder="Time" value={scheduleForm.time} onChange={e => setScheduleForm({...scheduleForm, time: e.target.value})} className={inputClass} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <input placeholder="Event Name" value={scheduleForm.eventName} onChange={e => setScheduleForm({...scheduleForm, eventName: e.target.value})} className={inputClass} />
@@ -327,7 +558,6 @@ export function Dashboard() {
                 </div>
               </div>
 
-              {/* Existing Entries */}
               <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
@@ -358,9 +588,6 @@ export function Dashboard() {
                           </td>
                         </tr>
                       ))}
-                      {scheduleEntries.length === 0 && (
-                        <tr><td colSpan={6} className="p-12 text-center font-space text-[#888] uppercase tracking-widest">No schedule entries yet</td></tr>
-                      )}
                     </tbody>
                   </table>
                 </div>
@@ -376,12 +603,7 @@ export function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <input placeholder="Name" value={newAdmin.name} onChange={e => setNewAdmin({...newAdmin, name: e.target.value})} className={inputClass} />
                   <input placeholder="Email" type="email" value={newAdmin.email} onChange={e => setNewAdmin({...newAdmin, email: e.target.value})} className={inputClass} />
-                  <PasswordInput 
-                    placeholder="Password" 
-                    value={newAdmin.password} 
-                    onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} 
-                    className={inputClass} 
-                  />
+                  <PasswordInput placeholder="Password" value={newAdmin.password} onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} className={inputClass} />
                   <select value={newAdmin.role} onChange={e => setNewAdmin({...newAdmin, role: e.target.value})} className={inputClass}>
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
@@ -413,10 +635,10 @@ export function Dashboard() {
                             </span>
                           </td>
                           <td className="p-4 font-space text-[#888] text-sm">{new Date(u.createdAt).toLocaleDateString()}</td>
-                          <td className="p-4">
-                            <button onClick={() => handleDeleteUser(u._id)} className="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
-                              <Trash2 size={14} />
-                            </button>
+                          <td className="p-4 text-right">
+                             <button onClick={() => handleDeleteUser(u._id)} className="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
+                                <Trash2 size={14} />
+                             </button>
                           </td>
                         </tr>
                       ))}
@@ -458,6 +680,84 @@ export function Dashboard() {
 
         </div>
       </div>
+
+      {/* EDIT STUDENT MODAL */}
+      <AnimatePresence>
+        {editingStudent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-2xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+              style={{ boxShadow: '12px 12px 0px #CCFF00' }}
+            >
+              <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
+                <h3 className="font-anton text-3xl text-[#CCFF00] uppercase tracking-wider">Edit Student</h3>
+                <button onClick={() => setEditingStudent(null)} className="text-[#888] hover:text-white transition-colors">
+                  <X size={28} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateStudent} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      value={editingStudent.fullName}
+                      onChange={(e) => setEditingStudent({...editingStudent, fullName: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Roll No</label>
+                    <input
+                      type="text"
+                      value={editingStudent.rollNo}
+                      onChange={(e) => setEditingStudent({...editingStudent, rollNo: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Mobile No</label>
+                    <input
+                      type="text"
+                      value={editingStudent.mobileNo}
+                      onChange={(e) => setEditingStudent({...editingStudent, mobileNo: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={editingStudent.email}
+                      onChange={(e) => setEditingStudent({...editingStudent, email: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 mt-8 pt-6 border-t-2 border-[#333]">
+                  <button type="submit" className="flex-1 bg-[#CCFF00] text-[#050505] font-anton text-xl uppercase py-4 border-2 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all">
+                    Save Changes
+                  </button>
+                  <button type="button" onClick={() => setEditingStudent(null)} className="flex-1 bg-transparent text-[#888] font-anton text-xl uppercase py-4 border-2 border-[#888] hover:border-white hover:text-white transition-all">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </Layout>
   );
 }

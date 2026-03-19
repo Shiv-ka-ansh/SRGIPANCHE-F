@@ -42,9 +42,9 @@ export function Home() {
               <div className="grid grid-cols-2 gap-6">
                 {[
                   { label: 'EVENTS', value: '50+' },
-                  { label: 'COLLEGES', value: '120+' },
-                  { label: 'FOOTFALL', value: '15K+' },
-                  { label: 'PRIZE POOL', value: '$50K' },
+                  { label: 'COLLEGES', value: '12' },
+                  { label: 'FOOTFALL', value: '15k' },
+                  { label: 'PRIZE POOL', value: '5k' },
                 ].map((stat, i) => (
                   <div key={i} className="bg-white p-6 border-4 border-black shadow-[8px_8px_0px_#000] transform hover:-translate-y-2 transition-transform">
                     <div className="text-4xl md:text-5xl font-display text-black mb-2">{stat.value}</div>
@@ -95,7 +95,7 @@ export function Home() {
           <p className="font-sans font-bold text-xl md:text-2xl mb-12 max-w-3xl mx-auto uppercase tracking-widest">
             Join thousands of innovators, creators, and competitors. Secure your spot at PANACHE 2K26 today.
           </p>
-          <MagneticButton to="/dashboard" className="inline-block px-12 py-6 bg-primary text-black font-display text-3xl uppercase tracking-widest border-4 border-black shadow-[8px_8px_0px_#000] hover:shadow-[4px_4px_0px_#000] transition-all">
+          <MagneticButton to="/register" className="inline-block px-12 py-6 bg-primary text-black font-display text-3xl uppercase tracking-widest border-4 border-black shadow-[8px_8px_0px_#000] hover:shadow-[4px_4px_0px_#000] transition-all">
             REGISTER NOW
           </MagneticButton>
         </div>
