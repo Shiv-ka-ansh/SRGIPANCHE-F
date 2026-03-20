@@ -57,6 +57,23 @@ export function Dashboard() {
   // Registrations
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [editingReg, setEditingReg] = useState<any>(null);
+
+  // Enhancement 1: Events category filter
+  const [eventCategoryFilter, setEventCategoryFilter] = useState<string>('All');
+
+  // Enhancement 2: Registrations admin filter
+  const [regAdminFilter, setRegAdminFilter] = useState<string>('All');
+
+  // Enhancement 3: Daily summary toggle
+  const [showDailySummary, setShowDailySummary] = useState(false);
+
+  // Enhancement 4: Export filters
+  const [exportFilters, setExportFilters] = useState({
+    category: 'All',
+    subEvent: 'All',
+    regType: 'All',
+    adminName: 'All',
+  });
   
   // Schedule
   const [scheduleEntries, setScheduleEntries] = useState<any[]>([]);
@@ -70,8 +87,8 @@ export function Dashboard() {
   useEffect(() => {
     if (activeTab === 'overview') fetchAnalytics();
     if (activeTab === 'students') fetchStudents();
-    if (activeTab === 'events' || activeTab === 'registrations') fetchEventsList();
-    if (activeTab === 'registrations') fetchRegistrations();
+    if (activeTab === 'events' || activeTab === 'registrations' || activeTab === 'export') fetchEventsList();
+    if (activeTab === 'registrations' || activeTab === 'export') fetchRegistrations();
     if (activeTab === 'schedule') fetchSchedule();
     if (activeTab === 'users') fetchUsers();
   }, [activeTab]);
@@ -254,11 +271,30 @@ export function Dashboard() {
 
   const handleExport = async (type: 'csv' | 'excel') => {
     try {
-      const res = await api.get(`/export/${type}`, { responseType: 'blob' });
+      const params: Record<string, string> = {
+        noTotal: 'true',
+      };
+      if (exportFilters.category !== 'All') params.category = exportFilters.category;
+      if (exportFilters.subEvent !== 'All') params.subEvent = exportFilters.subEvent;
+      if (exportFilters.regType !== 'All') params.regType = exportFilters.regType;
+      if (exportFilters.adminName !== 'All') params.adminName = exportFilters.adminName;
+
+      const res = await api.get(`/export/${type}`, {
+        responseType: 'blob',
+        params,
+      });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `panache-export.${type === 'csv' ? 'csv' : 'xlsx'}`;
+
+      const parts = [
+        'panache',
+        exportFilters.category !== 'All' ? exportFilters.category.toLowerCase() : null,
+        exportFilters.subEvent !== 'All' ? exportFilters.subEvent.toLowerCase().replace(/\s+/g, '-') : null,
+        exportFilters.regType !== 'All' ? exportFilters.regType : null,
+      ].filter(Boolean);
+      a.download = `${parts.join('-')}.${type === 'csv' ? 'csv' : 'xlsx'}`;
+
       a.click();
       window.URL.revokeObjectURL(url);
       toast.success(`${type.toUpperCase()} downloaded`);
@@ -267,6 +303,49 @@ export function Dashboard() {
 
   const inputClass = "w-full bg-[#050505] font-space text-white text-sm border-2 border-[#333] p-3 outline-none focus:border-[#CCFF00] transition-colors";
   const labelClass = "block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2";
+
+  // Enhancement 1: Filtered events list
+  const filteredEventsList = eventCategoryFilter === 'All'
+    ? eventsList
+    : eventsList.filter(ev => ev.category?.toLowerCase() === eventCategoryFilter.toLowerCase());
+
+  // Enhancement 2: Admin filter options + filtered registrations + payment summary
+  const adminOptions = ['All', ...Array.from(
+    new Set(registrations.map((r: any) => r.processedBy?.name).filter(Boolean))
+  )];
+  const filteredRegistrations = regAdminFilter === 'All'
+    ? registrations
+    : registrations.filter((r: any) => r.processedBy?.name === regAdminFilter);
+  const adminPaymentSummary: Record<string, number> = registrations.reduce((acc: any, r: any) => {
+    const name = r.processedBy?.name || 'Unknown';
+    acc[name] = (acc[name] || 0) + (r.totalAmount || 0);
+    return acc;
+  }, {});
+
+  // Enhancement 3: Daily summary
+  const dailySummary: Record<string, { count: number; revenue: number }> = registrations.reduce((acc: any, r: any) => {
+    const dateKey = r.processedAt
+      ? new Date(r.processedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : 'Unknown';
+    if (!acc[dateKey]) acc[dateKey] = { count: 0, revenue: 0 };
+    acc[dateKey].count += 1;
+    acc[dateKey].revenue += r.totalAmount || 0;
+    return acc;
+  }, {});
+  const sortedDailySummary = Object.entries(dailySummary).sort((a, b) => {
+    return new Date(b[0]).getTime() - new Date(a[0]).getTime();
+  });
+
+  // Enhancement 4: Export sub-event + admin options
+  const exportSubEventOptions = ['All', ...Array.from(new Set(
+    eventsList
+      .filter(ev => exportFilters.category === 'All' || ev.category?.toLowerCase() === exportFilters.category.toLowerCase())
+      .flatMap((ev: any) => ev.subEvents || [])
+      .filter(Boolean)
+  ))];
+  const exportAdminOptions = ['All', ...Array.from(
+    new Set(registrations.map((r: any) => r.processedBy?.name).filter(Boolean))
+  )];
 
   return (
     <Layout>
@@ -446,6 +525,26 @@ export function Dashboard() {
                 </button>
               </div>
 
+              {/* Category Filter */}
+              <div className="bg-[#121212] border-4 border-[#333] p-4 flex flex-wrap gap-2" style={{ boxShadow: '8px 8px 0px #333' }}>
+                {['All', 'General', 'Technical', 'Cultural', 'Cyber'].map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setEventCategoryFilter(cat)}
+                    className={`font-anton uppercase tracking-widest px-5 py-2 border-2 text-sm transition-all ${
+                      eventCategoryFilter === cat
+                        ? 'bg-[#CCFF00] text-[#050505] border-[#050505] shadow-[4px_4px_0px_#050505]'
+                        : 'bg-transparent text-[#888] border-[#333] hover:border-[#CCFF00] hover:text-[#CCFF00]'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+                <span className="ml-auto font-space text-xs text-[#888] uppercase tracking-widest self-center">
+                  {filteredEventsList.length} event{filteredEventsList.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
               <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
@@ -457,7 +556,7 @@ export function Dashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {eventsList.map((ev: any) => (
+                      {filteredEventsList.map((ev: any) => (
                         <tr key={ev._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
                           <td className="p-4 font-space font-bold text-white text-sm uppercase">{ev.category}</td>
                           <td className="p-4 font-space font-bold text-white text-sm uppercase">{ev.name}</td>
@@ -498,54 +597,147 @@ export function Dashboard() {
 
           {/* ==== REGISTRATIONS ==== */}
           {!loading && activeTab === 'registrations' && (
-            <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-[#050505] border-b-4 border-[#333]">
-                      {['Student/Team Leader', 'Roll No', 'Type', 'Events', 'Total', 'Processed By', 'Date', 'Actions'].map(h => (
-                        <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {registrations.map((r: any) => (
-                      <tr key={r._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
-                        <td className="p-4">
-                          <div className="font-space font-bold text-white text-sm">{r.studentName}</div>
-                          {r.isGroup && r.groupMembers && r.groupMembers.length > 0 && (
-                            <div className="font-space text-[#aaa] text-xs mt-1">+{r.groupMembers.length} members</div>
-                          )}
-                        </td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{r.rollNo}</td>
-                        <td className="p-4">
-                            {r.isGroup 
-                              ? <span className="text-[#FF00FF] font-space text-xs font-bold border border-[#FF00FF] px-2 py-1 uppercase">Group</span>
-                              : <span className="text-[#00FFFF] font-space text-xs font-bold border border-[#00FFFF] px-2 py-1 uppercase">Single</span>
-                            }
-                        </td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">
-                          {r.events.map((e: any) => e.eventName).join(', ')}
-                        </td>
-                        <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{r.totalAmount}</td>
-                        <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td>
-                        <td className="p-4 font-space text-[#888] text-xs leading-tight">
-                          {new Date(r.processedAt).toLocaleDateString()}<br/>
-                          <span className="opacity-60">{new Date(r.processedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        </td>
-                        <td className="p-4">
-                             <button
-                               onClick={() => setEditingReg(r)}
-                               className="font-space font-bold text-xs uppercase tracking-widest px-3 py-1 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-2"
-                             >
-                               <Edit size={12} /> Edit
-                             </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="space-y-4">
+
+              {/* Daily Summary Toggle */}
+              <div className="bg-[#121212] border-4 border-[#333]" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <button
+                  onClick={() => setShowDailySummary(prev => !prev)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
+                >
+                  <span className="font-anton text-xl text-[#CCFF00] uppercase tracking-widest">
+                    Daily Registration Summary
+                  </span>
+                  <span className="font-space text-xs text-[#888] uppercase tracking-widest border-2 border-[#333] px-3 py-1">
+                    {showDailySummary ? 'Hide ▲' : 'Show ▼'}
+                  </span>
+                </button>
+
+                {showDailySummary && (
+                  <div className="border-t-2 border-[#333] overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-[#050505]">
+                          <th className="p-4 font-space font-bold text-xs text-[#888] uppercase tracking-widest">Date</th>
+                          <th className="p-4 font-space font-bold text-xs text-[#888] uppercase tracking-widest">Registrations</th>
+                          <th className="p-4 font-space font-bold text-xs text-[#888] uppercase tracking-widest">Revenue Collected</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedDailySummary.map(([date, data]) => (
+                          <tr key={date} className="border-t border-[#222] hover:bg-white/5 transition-colors">
+                            <td className="p-4 font-space font-bold text-white text-sm">{date}</td>
+                            <td className="p-4 font-anton text-[#00FFFF] text-2xl">{data.count}</td>
+                            <td className="p-4 font-anton text-[#CCFF00] text-2xl">₹{data.revenue}</td>
+                          </tr>
+                        ))}
+                        {sortedDailySummary.length === 0 && (
+                          <tr>
+                            <td colSpan={3} className="p-8 text-center font-space text-[#888] uppercase tracking-widest">
+                              No registrations yet
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
+
+              {/* Admin Filter + Summary Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Filter Dropdown */}
+                <div className="bg-[#121212] border-4 border-[#333] p-4 md:col-span-1" style={{ boxShadow: '8px 8px 0px #333' }}>
+                  <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">
+                    Filter by Admin
+                  </label>
+                  <select
+                    value={regAdminFilter}
+                    onChange={(e) => setRegAdminFilter(e.target.value)}
+                    className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                  >
+                    {adminOptions.map(name => (
+                      <option key={name} value={name}>{name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Per-Admin Payment Cards */}
+                <div className="md:col-span-2 bg-[#121212] border-4 border-[#333] p-4" style={{ boxShadow: '8px 8px 0px #333' }}>
+                  <p className="font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-3">Payment Collected Per Admin</p>
+                  <div className="flex flex-wrap gap-3">
+                    {Object.entries(adminPaymentSummary).map(([name, total]) => (
+                      <div
+                        key={name}
+                        onClick={() => setRegAdminFilter(name === regAdminFilter ? 'All' : name)}
+                        className={`cursor-pointer border-2 px-4 py-2 transition-all ${
+                          regAdminFilter === name
+                            ? 'border-[#CCFF00] bg-[#CCFF00]/10'
+                            : 'border-[#333] hover:border-[#888]'
+                        }`}
+                      >
+                        <p className="font-space font-bold text-white text-xs uppercase tracking-widest">{name}</p>
+                        <p className="font-anton text-[#CCFF00] text-xl">₹{total as number}</p>
+                      </div>
+                    ))}
+                    {Object.keys(adminPaymentSummary).length === 0 && (
+                      <p className="font-space text-[#666] text-xs uppercase">No data yet</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Registrations Table */}
+              <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-[#050505] border-b-4 border-[#333]">
+                        {['Student/Team Leader', 'Roll No', 'Type', 'Events', 'Total', 'Processed By', 'Date', 'Actions'].map(h => (
+                          <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredRegistrations.map((r: any) => (
+                        <tr key={r._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
+                          <td className="p-4">
+                            <div className="font-space font-bold text-white text-sm">{r.studentName}</div>
+                            {r.isGroup && r.groupMembers && r.groupMembers.length > 0 && (
+                              <div className="font-space text-[#aaa] text-xs mt-1">+{r.groupMembers.length} members</div>
+                            )}
+                          </td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{r.rollNo}</td>
+                          <td className="p-4">
+                              {r.isGroup 
+                                ? <span className="text-[#FF00FF] font-space text-xs font-bold border border-[#FF00FF] px-2 py-1 uppercase">Group</span>
+                                : <span className="text-[#00FFFF] font-space text-xs font-bold border border-[#00FFFF] px-2 py-1 uppercase">Single</span>
+                              }
+                          </td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">
+                            {r.events.map((e: any) => e.eventName).join(', ')}
+                          </td>
+                          <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{r.totalAmount}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td>
+                          <td className="p-4 font-space text-[#888] text-xs leading-tight">
+                            {new Date(r.processedAt).toLocaleDateString()}<br/>
+                            <span className="opacity-60">{new Date(r.processedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                          </td>
+                          <td className="p-4">
+                               <button
+                                 onClick={() => setEditingReg(r)}
+                                 className="font-space font-bold text-xs uppercase tracking-widest px-3 py-1 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-2"
+                               >
+                                 <Edit size={12} /> Edit
+                               </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
             </div>
           )}
 
@@ -628,11 +820,39 @@ export function Dashboard() {
             <div className="space-y-8">
               <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
                 <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">Create Admin User</h3>
+                
+                {/* Hidden fields to trick browser auto-fill */}
+                <input type="text" style={{ display: 'none' }} aria-hidden="true" />
+                <input type="password" style={{ display: 'none' }} aria-hidden="true" />
+
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  <input placeholder="Name" value={newAdmin.name} onChange={e => setNewAdmin({...newAdmin, name: e.target.value})} className={inputClass} />
-                  <input placeholder="Email" type="email" value={newAdmin.email} onChange={e => setNewAdmin({...newAdmin, email: e.target.value})} className={inputClass} />
-                  <PasswordInput placeholder="Password" value={newAdmin.password} onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} className={inputClass} />
-                  <select value={newAdmin.role} onChange={e => setNewAdmin({...newAdmin, role: e.target.value as any})} className={inputClass}>
+                  <input 
+                    placeholder="Name" 
+                    value={newAdmin.name} 
+                    onChange={e => setNewAdmin({...newAdmin, name: e.target.value})} 
+                    className={inputClass} 
+                    autoComplete="off"
+                  />
+                  <input 
+                    placeholder="Email" 
+                    type="email" 
+                    value={newAdmin.email} 
+                    onChange={e => setNewAdmin({...newAdmin, email: e.target.value})} 
+                    className={inputClass} 
+                    autoComplete="new-email"
+                  />
+                  <PasswordInput 
+                    placeholder="Password" 
+                    value={newAdmin.password} 
+                    onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} 
+                    className={inputClass} 
+                    autoComplete="new-password"
+                  />
+                  <select 
+                    value={newAdmin.role} 
+                    onChange={e => setNewAdmin({...newAdmin, role: e.target.value as any})} 
+                    className={inputClass}
+                  >
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
                   </select>
@@ -707,30 +927,122 @@ export function Dashboard() {
 
           {/* ==== EXPORT ==== */}
           {!loading && activeTab === 'export' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-[#121212] border-4 border-[#CCFF00] p-8 text-center cursor-pointer hover:translate-y-[-4px] transition-all"
-                style={{ boxShadow: '8px 8px 0px #CCFF00' }}
-                onClick={() => handleExport('csv')}
-              >
-                <FileDown size={48} className="text-[#CCFF00] mx-auto mb-4" />
-                <h3 className="font-anton text-2xl text-[#CCFF00] uppercase mb-2">Export CSV</h3>
-                <p className="font-space text-[#888] text-sm uppercase tracking-wider">Download all registrations as CSV file</p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-[#121212] border-4 border-[#00FFFF] p-8 text-center cursor-pointer hover:translate-y-[-4px] transition-all"
-                style={{ boxShadow: '8px 8px 0px #00FFFF' }}
-                onClick={() => handleExport('excel')}
-              >
-                <FileDown size={48} className="text-[#00FFFF] mx-auto mb-4" />
-                <h3 className="font-anton text-2xl text-[#00FFFF] uppercase mb-2">Export Excel</h3>
-                <p className="font-space text-[#888] text-sm uppercase tracking-wider">Download formatted Excel spreadsheet</p>
-              </motion.div>
+            <div className="space-y-8">
+              <h2 className="font-anton text-3xl text-white uppercase">Export Data</h2>
+
+              {/* Filter Panel */}
+              <div className="bg-[#121212] border-4 border-[#333] p-6 space-y-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <p className="font-space font-bold text-xs text-[#888] uppercase tracking-widest">Apply Filters Before Export</p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Category */}
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Event Category</label>
+                    <select
+                      value={exportFilters.category}
+                      onChange={(e) => setExportFilters({ ...exportFilters, category: e.target.value, subEvent: 'All' })}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                    >
+                      {['All', 'General', 'Technical', 'Cultural', 'Cyber'].map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sub Event */}
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Sub Event</label>
+                    <select
+                      value={exportFilters.subEvent}
+                      onChange={(e) => setExportFilters({ ...exportFilters, subEvent: e.target.value })}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                      disabled={exportSubEventOptions.length <= 1}
+                    >
+                      {exportSubEventOptions.map(s => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Registration Type */}
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Registration Type</label>
+                    <select
+                      value={exportFilters.regType}
+                      onChange={(e) => setExportFilters({ ...exportFilters, regType: e.target.value })}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                    >
+                      <option value="All">All</option>
+                      <option value="single">Single</option>
+                      <option value="group">Group</option>
+                    </select>
+                  </div>
+
+                  {/* Admin */}
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Processed By Admin</label>
+                    <select
+                      value={exportFilters.adminName}
+                      onChange={(e) => setExportFilters({ ...exportFilters, adminName: e.target.value })}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                    >
+                      {exportAdminOptions.map(n => (
+                        <option key={n} value={n}>{n}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Active Filters Display */}
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-[#333]">
+                  <span className="font-space text-xs text-[#888] uppercase tracking-widest self-center">Active:</span>
+                  {Object.entries(exportFilters).map(([key, val]) =>
+                    val !== 'All' ? (
+                      <span key={key} className="font-space text-xs font-bold uppercase bg-[#CCFF00]/10 border border-[#CCFF00] text-[#CCFF00] px-2 py-1 tracking-widest">
+                        {key}: {val}
+                        <button
+                          onClick={() => setExportFilters({ ...exportFilters, [key]: 'All' })}
+                          className="ml-2 hover:text-white"
+                        >×</button>
+                      </span>
+                    ) : null
+                  )}
+                  {Object.values(exportFilters).every(v => v === 'All') && (
+                    <span className="font-space text-xs text-[#555] uppercase">None — exporting all records</span>
+                  )}
+                </div>
+
+                <p className="font-space text-[10px] text-[#555] uppercase tracking-widest">
+                  Note: Export will NOT include a total row at the bottom.
+                </p>
+              </div>
+
+              {/* Export Buttons */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-[#121212] border-4 border-[#CCFF00] p-8 text-center cursor-pointer hover:translate-y-[-4px] transition-all"
+                  style={{ boxShadow: '8px 8px 0px #CCFF00' }}
+                  onClick={() => handleExport('csv')}
+                >
+                  <FileDown size={48} className="text-[#CCFF00] mx-auto mb-4" />
+                  <h3 className="font-anton text-2xl text-[#CCFF00] uppercase mb-2">Export CSV</h3>
+                  <p className="font-space text-[#888] text-sm uppercase tracking-wider">Download filtered registrations as CSV</p>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-[#121212] border-4 border-[#00FFFF] p-8 text-center cursor-pointer hover:translate-y-[-4px] transition-all"
+                  style={{ boxShadow: '8px 8px 0px #00FFFF' }}
+                  onClick={() => handleExport('excel')}
+                >
+                  <FileDown size={48} className="text-[#00FFFF] mx-auto mb-4" />
+                  <h3 className="font-anton text-2xl text-[#00FFFF] uppercase mb-2">Export Excel</h3>
+                  <p className="font-space text-[#888] text-sm uppercase tracking-wider">Download formatted Excel spreadsheet</p>
+                </motion.div>
+              </div>
             </div>
           )}
 
