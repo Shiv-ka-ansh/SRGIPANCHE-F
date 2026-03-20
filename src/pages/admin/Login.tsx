@@ -20,26 +20,34 @@ export function Login() {
     setLoading(true);
 
     try {
+        console.time('Client-Login-Request');
       const { data } = await api.post('/auth/login', { email, password });
+      console.timeEnd('Client-Login-Request');
+
       if (data.success) {
         login(data.token, data.user);
-        toast.success('Logged in successfully', {
-          style: { background: '#CCFF00', color: '#050505', borderRadius: '0', border: '4px solid #050505' }
+        toast.success('Login Successful! Redirecting...', {
+          duration: 3000,
+          style: { background: '#CCFF00', color: '#050505', borderRadius: '0', border: '4px solid #050505', fontWeight: 'bold' }
         });
         
+        console.time('Client-Navigation');
         if (data.user.role === 'superadmin') {
           navigate('/superadmin/dashboard');
         } else {
           navigate('/admin/dashboard');
         }
+        console.timeEnd('Client-Navigation');
+        // We DON'T set loading to false here because we want to stay in "Authenticating" 
+        // state until the navigation actually unmounts this component.
+        return; 
       }
     } catch (error: any) {
+      console.timeEnd('Client-Login-Request');
       const errorMessage = error.response?.data?.error || 'Login failed';
       setErrorMsg(errorMessage);
       setShowError(true);
-      // Removed duplicate toast because of our custom right-side alert
-    } finally {
-      setLoading(false);
+      setLoading(false); // Reset only on error
     }
   };
 
