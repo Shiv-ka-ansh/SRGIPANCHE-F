@@ -269,6 +269,24 @@ export function Dashboard() {
     } catch { toast.error('Failed to delete'); }
   };
 
+  const handleExportEventWise = async (type: 'csv' | 'excel') => {
+    try {
+      const res = await api.get(`/export/event-participants`, {
+        responseType: 'blob',
+        params: { format: type },
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `panache-event-participants.${type === 'csv' ? 'csv' : 'xlsx'}`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast.success(`Event-wise list downloaded!`);
+    } catch {
+      toast.error('Export failed');
+    }
+  };
+
   const handleExport = async (type: 'csv' | 'excel') => {
     try {
       const params: Record<string, string> = {
@@ -929,6 +947,41 @@ export function Dashboard() {
           {!loading && activeTab === 'export' && (
             <div className="space-y-8">
               <h2 className="font-anton text-3xl text-white uppercase">Export Data</h2>
+
+              {/* Event-wise Participant List — Primary Export */}
+              <div className="bg-[#121212] border-4 border-[#FF00FF] p-6 mb-4" style={{ boxShadow: '8px 8px 0px #FF00FF' }}>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-anton text-2xl text-[#FF00FF] uppercase mb-1">
+                      Event-wise Participant List
+                    </h3>
+                    <p className="font-space text-[#888] text-xs uppercase tracking-widest">
+                      Single file • All events • Registered participants per event • Grouped by category
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleExportEventWise('excel')}
+                      className="bg-[#FF00FF] text-white font-anton text-lg uppercase px-6 py-3 border-4 border-white hover:bg-[#CCFF00] hover:text-[#050505] hover:border-[#050505] transition-all flex items-center gap-2"
+                    >
+                      <FileDown size={20} /> Excel
+                    </button>
+                    <button
+                      onClick={() => handleExportEventWise('csv')}
+                      className="bg-transparent text-[#FF00FF] font-anton text-lg uppercase px-6 py-3 border-4 border-[#FF00FF] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2"
+                    >
+                      <FileDown size={20} /> CSV
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 my-2">
+                <div className="flex-1 border-t-2 border-[#333]" />
+                <span className="font-space text-xs text-[#555] uppercase tracking-widest">or export raw data with filters below</span>
+                <div className="flex-1 border-t-2 border-[#333]" />
+              </div>
 
               {/* Filter Panel */}
               <div className="bg-[#121212] border-4 border-[#333] p-6 space-y-6" style={{ boxShadow: '8px 8px 0px #333' }}>
