@@ -19,6 +19,7 @@ interface StudentData {
   email: string;
   status: string;
   token: string;
+  emailSent?: boolean;
 }
 
 interface GroupMember {
@@ -64,6 +65,7 @@ export function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [branchFilter, setBranchFilter] = useState('All');
   const [loadingStudents, setLoadingStudents] = useState(false);
+  const [resendingEmails, setResendingEmails] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentData | null>(null);
 
   useEffect(() => {
@@ -242,6 +244,37 @@ export function Dashboard() {
       }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to update student');
+    }
+  };
+
+  const handleResendFailed = async () => {
+    if (!window.confirm('Are you sure you want to resend emails to all students who haven\'t received them?')) return;
+    setResendingEmails(true);
+    try {
+      const { data } = await api.post('/students/resend-failed');
+      if (data.success) {
+        toast.success(data.message, { duration: 5000 });
+        fetchStudents();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to resend emails');
+    } finally {
+      setResendingEmails(false);
+    }
+  };
+
+  const handleResendToStudent = async (id: string) => {
+    setResendingEmails(true);
+    try {
+      const { data } = await api.post(`/students/${id}/resend`);
+      if (data.success) {
+        toast.success('Email sent to student');
+        fetchStudents();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to resend email');
+    } finally {
+      setResendingEmails(false);
     }
   };
 
@@ -668,6 +701,14 @@ export function Dashboard() {
                   <button onClick={fetchStudents} className="bg-[#CCFF00] text-[#050505] font-anton px-6 border-2 border-transparent hover:bg-white transition-colors">
                     Search
                   </button>
+                  <button 
+                    onClick={handleResendFailed} 
+                    disabled={resendingEmails}
+                    className="bg-[#121212] border-4 border-[#CCFF00] text-[#CCFF00] font-anton px-6 py-2 uppercase hover:bg-[#CCFF00] hover:text-[#050505] transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    {resendingEmails ? <Loader2 size={18} className="animate-spin" /> : <Mail size={18} />}
+                    Resend Failed
+                  </button>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-space font-bold uppercase text-[#888] text-xs">Branch:</span>
@@ -718,14 +759,30 @@ export function Dashboard() {
                           </td>
                           <td className="p-4">
                             <span className="font-space font-bold text-[#CCFF00] text-sm tracking-[0.2em]">{s.token}</span>
+                            <div className="mt-1">
+                              {s.emailSent ? (
+                                <span className="text-[10px] bg-green-500/10 text-green-500 px-2 py-0.5 uppercase font-bold border border-green-500/20">Sent</span>
+                              ) : (
+                                <span className="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 uppercase font-bold border border-red-500/20">Failed</span>
+                              )}
+                            </div>
                           </td>
                           <td className="p-4">
-                            <button
-                              onClick={() => setEditingStudent(s)}
-                              className="font-space font-bold text-xs uppercase tracking-widest px-4 py-2 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-2"
-                            >
-                              <Edit size={14} /> Edit
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setEditingStudent(s)}
+                                className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1"
+                              >
+                                <Edit size={12} /> Edit
+                              </button>
+                              <button
+                                onClick={() => handleResendToStudent(s._id)}
+                                disabled={resendingEmails}
+                                className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-white/20 text-white/50 hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1 disabled:opacity-50"
+                              >
+                                <Mail size={12} /> Email
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
