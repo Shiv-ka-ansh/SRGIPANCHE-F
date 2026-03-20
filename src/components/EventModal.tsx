@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Phone, ScrollText, Zap } from 'lucide-react';
 
@@ -18,19 +20,31 @@ interface EventModalProps {
 }
 
 export function EventModal({ isOpen, onClose, event }: EventModalProps) {
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   if (!event) return null;
 
-  return (
+  const color = event.color || '#CCFF00';
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/90 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm"
           />
 
           {/* Modal Content */}
@@ -40,8 +54,8 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             className="relative w-full max-w-4xl bg-[#121212] border-4 border-[#333] overflow-hidden flex flex-col md:flex-row"
             style={{ 
-              boxShadow: `16px 16px 0px ${event.color}`,
-              borderColor: event.color 
+              boxShadow: `16px 16px 0px ${color}`,
+              borderColor: color 
             }}
           >
             {/* Left Side: Image & Category */}
@@ -54,7 +68,7 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <div 
                 className="absolute top-6 left-6 px-4 py-1 font-anton text-sm uppercase tracking-widest text-black border-2 border-black -rotate-2"
-                style={{ backgroundColor: event.color }}
+                style={{ backgroundColor: color }}
               >
                 {event.category}
               </div>
@@ -74,7 +88,7 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
                   {event.name}
                 </h2>
                 <div className="flex items-center gap-4">
-                  <span className="font-anton text-3xl" style={{ color: event.color }}>₹{event.amount}</span>
+                  <span className="font-anton text-3xl" style={{ color: color }}>₹{event.amount}</span>
                   <span className="text-[#888] font-space text-xs uppercase tracking-widest border-l-2 border-[#333] pl-4">ENTRY FEE</span>
                 </div>
               </div>
@@ -82,7 +96,7 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
               {/* Description */}
               {event.description && (
                 <div className="mb-10">
-                  <p className="text-[#CCC] font-space text-lg leading-relaxed border-l-4 p-4 bg-white/5" style={{ borderColor: event.color }}>
+                  <p className="text-[#CCC] font-space text-lg leading-relaxed border-l-4 p-4 bg-white/5" style={{ borderColor: color }}>
                     {event.description}
                   </p>
                 </div>
@@ -92,14 +106,14 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
                 {/* Rules Section */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <ScrollText size={20} style={{ color: event.color }} />
+                    <ScrollText size={20} style={{ color: color }} />
                     <h4 className="font-anton text-xl text-white uppercase tracking-wider">EVENT RULES</h4>
                   </div>
                   <ul className="space-y-3">
                     {event.rules ? (
                       event.rules.map((rule, index) => (
                         <li key={index} className="flex gap-3 text-sm text-[#888] font-space leading-snug">
-                          <span className="text-white font-bold" style={{ color: event.color }}>{index + 1}.</span>
+                          <span className="text-white font-bold" style={{ color: color }}>{index + 1}.</span>
                           {rule}
                         </li>
                       ))
@@ -112,7 +126,7 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
                 {/* Coordinators Section */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <User size={20} style={{ color: event.color }} />
+                    <User size={20} style={{ color: color }} />
                     <h4 className="font-anton text-xl text-white uppercase tracking-wider">COORDINATORS</h4>
                   </div>
                   <div className="space-y-4">
@@ -124,7 +138,7 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
                             href={`tel:${coord.phone}`} 
                             className="flex items-center gap-2 text-xs font-space text-[#888] hover:text-white transition-colors"
                           >
-                            <Phone size={12} style={{ color: event.color }} />
+                            <Phone size={12} style={{ color: color }} />
                             {coord.phone}
                           </a>
                         </div>
@@ -140,7 +154,7 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
                 <a 
                   href="/register" 
                   className="btn-brutal flex-grow text-center text-xl py-6"
-                  style={{ backgroundColor: event.color, color: '#000' }}
+                  style={{ backgroundColor: color, color: '#000' }}
                 >
                   PROCEED TO REGISTER <Zap size={24} className="ml-2 inline" />
                 </a>
@@ -155,6 +169,7 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

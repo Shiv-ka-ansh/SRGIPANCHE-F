@@ -19,6 +19,8 @@ const allEvents = Object.entries(EVENT_CATEGORIES).flatMap(([key, cat]) =>
     image: cat.image,
     description: ev.description,
     subEvents: ev.subEvents,
+    rules: ev.rules,
+    coordinators: ev.coordinators,
   }))
 );
 
@@ -165,6 +167,7 @@ export function Events() {
                     <Link
                       to="/register"
                       className="btn-brutal w-full text-center mt-auto"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       REGISTER NOW <Zap size={18} className="ml-2 inline" />
                     </Link>

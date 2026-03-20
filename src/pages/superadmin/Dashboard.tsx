@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Layout } from '../../components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -736,20 +737,21 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* EDIT STUDENT MODAL */}
-      <AnimatePresence>
-        {editingStudent && (
+      {/* EDIT STUDENT MODAL (Portal) */}
+      {createPortal(
+        <AnimatePresence>
+          {editingStudent && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-2xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+              className="relative w-full max-w-2xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
               style={{ boxShadow: '12px 12px 0px #CCFF00' }}
             >
               <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
@@ -855,22 +857,25 @@ export function Dashboard() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
-      {/* EDIT REGISTRATION MODAL */}
-      <AnimatePresence>
+      {/* EDIT REGISTRATION MODAL (Portal) */}
+      {createPortal(
+        <AnimatePresence>
         {editingReg && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-2xl bg-[#121212] border-4 border-[#FF00FF] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+              className="relative w-full max-w-2xl bg-[#121212] border-4 border-[#FF00FF] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
               style={{ boxShadow: '12px 12px 0px #FF00FF' }}
             >
               <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
@@ -983,22 +988,25 @@ export function Dashboard() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
-      {/* EDIT EVENT MODAL */}
-      <AnimatePresence>
+      {/* EDIT EVENT MODAL (Portal) */}
+      {createPortal(
+        <AnimatePresence>
         {isEventModalOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
           >
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-4xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+              className="relative w-full max-w-4xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
               style={{ boxShadow: '12px 12px 0px #CCFF00' }}
             >
               <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
@@ -1065,7 +1073,9 @@ export function Dashboard() {
             </motion.div>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
     </Layout>
   );

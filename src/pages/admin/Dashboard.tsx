@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Layout } from '../../components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Loader2, CheckCircle2, User, Hash, Phone, Mail, BookOpen, Users, List, Edit, X, Plus, Trash2, AlertTriangle } from 'lucide-react';
@@ -36,6 +37,7 @@ interface SelectedEvent {
   eventName: string;
   amount: number;
   subEvent?: string;
+  isFlat?: boolean;
 }
 
 const categoryKeys = Object.keys(EVENT_CATEGORIES);
@@ -66,7 +68,8 @@ export function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [branchFilter, setBranchFilter] = useState('All');
   const [loadingStudents, setLoadingStudents] = useState(false);
-  const [resendingEmails, setResendingEmails] = useState(false);
+  const [bulkResending, setBulkResending] = useState(false);
+  const [resendingStudentId, setResendingStudentId] = useState<string | null>(null);
   const [editingStudent, setEditingStudent] = useState<StudentData | null>(null);
 
   // Custom Confirm Modal State
@@ -165,7 +168,7 @@ export function Dashboard() {
     setGroupMembersList(groupMembersList.filter(m => m._id !== id));
   };
 
-  const toggleEvent = (category: string, eventName: string, amount: number, hasSubEvents: boolean) => {
+  const toggleEvent = (category: string, eventName: string, amount: number, hasSubEvents: boolean, isFlat?: boolean) => {
     const exists = selectedEvents.find(e => e.eventName === eventName && e.category === category);
     if (exists) {
       setSelectedEvents(selectedEvents.filter(e => !(e.eventName === eventName && e.category === category)));
@@ -176,14 +179,21 @@ export function Dashboard() {
           toast.error('Please select a sub-event first');
           return;
         }
-        setSelectedEvents([...selectedEvents, { category, eventName, amount, subEvent: sub }]);
+        setSelectedEvents([...selectedEvents, { category, eventName, amount, subEvent: sub, isFlat }]);
       } else {
-        setSelectedEvents([...selectedEvents, { category, eventName, amount }]);
+        setSelectedEvents([...selectedEvents, { category, eventName, amount, isFlat }]);
       }
     }
   };
 
-  const totalAmount = selectedEvents.reduce((sum, e) => sum + e.amount, 0);
+  const memberCount = groupMembersList.length || 1;
+
+  const totalAmount = selectedEvents.reduce((sum, e) => {
+    if (e.isFlat) {
+      return sum + e.amount;
+    }
+    return sum + e.amount * memberCount;
+  }, 0);
 
   const handleConfirmSingle = async () => {
     if (!student || selectedEvents.length === 0) return;
@@ -233,10 +243,17 @@ export function Dashboard() {
       return;
     }
     
+    const breakdown = selectedEvents.map(e => {
+      if (e.isFlat) {
+        return `${e.eventName}: ₹${e.amount} (flat)`;
+      }
+      return `${e.eventName}: ₹${e.amount} × ${memberCount} = ₹${e.amount * memberCount}`;
+    }).join('\n');
+
     setConfirmModal({
       isOpen: true,
       title: 'Confirm Group Registration',
-      message: `Are you sure you have received ₹${totalAmount} for this team of ${groupMembersList.length} members?`,
+      message: `${memberCount} members. Collected amount: ₹${totalAmount}\n\n${breakdown}`,
       confirmLabel: 'Confirm Team',
       confirmColor: '#CCFF00',
       onConfirm: async () => {
@@ -299,7 +316,7 @@ export function Dashboard() {
       confirmColor: '#FF00FF', // Branded Magenta for resend
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        setResendingEmails(true);
+        setBulkResending(true);
         try {
           const { data } = await api.post('/students/resend-failed');
           if (data.success) {
@@ -309,14 +326,14 @@ export function Dashboard() {
         } catch (error: any) {
           toast.error(error.response?.data?.error || 'Failed to resend emails');
         } finally {
-          setResendingEmails(false);
+          setBulkResending(false);
         }
       }
     });
   };
 
   const handleResendToStudent = async (id: string) => {
-    setResendingEmails(true);
+    setResendingStudentId(id);
     try {
       const { data } = await api.post(`/students/${id}/resend`);
       if (data.success) {
@@ -326,7 +343,7 @@ export function Dashboard() {
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to resend email');
     } finally {
-      setResendingEmails(false);
+      setResendingStudentId(null);
     }
   };
 
@@ -410,7 +427,7 @@ export function Dashboard() {
                     backgroundColor: isSelected ? `${catColor}10` : 'transparent',
                   }}
                   onClick={() => {
-                    if (!event.subEvents) toggleEvent(activeCategory, event.name, event.amount, false);
+                    if (!event.subEvents) toggleEvent(activeCategory, event.name, event.amount, false, event.isFlat);
                   }}
                 >
                   <div className="flex items-center gap-4 flex-1">
@@ -446,7 +463,7 @@ export function Dashboard() {
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleEvent(activeCategory, event.name, event.amount, true);
+                            toggleEvent(activeCategory, event.name, event.amount, true, event.isFlat);
                           }}
                         >
                           {isSelected ? 'Remove' : 'Add'}
@@ -465,7 +482,14 @@ export function Dashboard() {
 
         <div className="mt-8 pt-8 border-t-4 border-[#333] flex items-center justify-between">
           <span className="font-anton text-2xl text-white uppercase tracking-wider">Total:</span>
-          <span className="font-anton text-4xl text-[#CCFF00]">₹{totalAmount}</span>
+          <div className="text-right">
+            <span className="font-anton text-4xl text-[#CCFF00]">₹{totalAmount}</span>
+            {groupMembersList.length > 0 && (
+              <p className="font-space text-xs text-[#888] uppercase tracking-widest mt-1">
+                {memberCount} member{memberCount > 1 ? 's' : ''} · per-person events multiplied
+              </p>
+            )}
+          </div>
         </div>
         {selectedEvents.length > 0 && (
           <div className="mt-4 bg-[#050505] border-2 border-[#333] p-4">
@@ -549,7 +573,7 @@ export function Dashboard() {
                 <label className="block font-space font-bold uppercase text-[#CCFF00] mb-4 text-sm">
                   Enter Student Token
                 </label>
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <input
                     type="text"
                     maxLength={6}
@@ -561,7 +585,7 @@ export function Dashboard() {
                   <button
                     onClick={handleVerifySingle}
                     disabled={verifying || tokenInput.length !== 6}
-                    className="bg-[#CCFF00] text-[#050505] font-anton text-xl uppercase px-8 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="w-full sm:w-auto bg-[#CCFF00] text-[#050505] font-anton text-xl uppercase px-8 py-4 sm:py-0 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {verifying ? <Loader2 className="animate-spin" size={24} /> : <Search size={24} />}
                     VERIFY
@@ -645,7 +669,7 @@ export function Dashboard() {
                 </h3>
 
                 {/* Token Adder */}
-                <div className="flex gap-4 mb-8 border-b-2 border-[#333] pb-8">
+                <div className="flex flex-col sm:flex-row gap-4 mb-8 border-b-2 border-[#333] pb-8">
                   <input
                     type="text"
                     maxLength={6}
@@ -657,7 +681,7 @@ export function Dashboard() {
                   <button
                     onClick={handleVerifyGroupMember}
                     disabled={verifyingGroupMember || groupTokenInput.length !== 6}
-                    className="bg-[#333] text-white font-space font-bold uppercase tracking-widest px-8 border-4 border-[#333] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-all disabled:opacity-50 flex items-center gap-2"
+                    className="w-full sm:w-auto bg-[#333] text-white font-space font-bold uppercase tracking-widest px-8 py-4 sm:py-0 border-4 border-[#333] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {verifyingGroupMember ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
                     ADD MEMBER
@@ -755,10 +779,10 @@ export function Dashboard() {
                   </button>
                   <button 
                     onClick={handleResendFailed} 
-                    disabled={resendingEmails}
+                    disabled={bulkResending}
                     className="bg-[#121212] border-4 border-[#CCFF00] text-[#CCFF00] font-anton px-6 py-2 uppercase hover:bg-[#CCFF00] hover:text-[#050505] transition-all disabled:opacity-50 flex items-center gap-2"
                   >
-                    {resendingEmails ? <Loader2 size={18} className="animate-spin" /> : <Mail size={18} />}
+                    {bulkResending ? <Loader2 size={18} className="animate-spin" /> : <Mail size={18} />}
                     Resend Failed
                   </button>
                 </div>
@@ -829,10 +853,10 @@ export function Dashboard() {
                               </button>
                               <button
                                 onClick={() => handleResendToStudent(s._id)}
-                                disabled={resendingEmails}
+                                disabled={resendingStudentId === s._id}
                                 className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-white/20 text-white/50 hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1 disabled:opacity-50"
                               >
-                                <Mail size={12} /> Email
+                                {resendingStudentId === s._id ? <Loader2 size={12} className="animate-spin" /> : <Mail size={12} />} Email
                               </button>
                             </div>
                           </td>
@@ -854,129 +878,132 @@ export function Dashboard() {
       <ConfirmModal
         {...confirmModal}
         onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-        loading={submitting || resendingEmails}
+        loading={submitting || bulkResending}
       />
 
-      {/* ==== EDIT STUDENT MODAL ==== */}
-      <AnimatePresence>
-        {editingStudent && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-          >
+      {/* ==== EDIT STUDENT MODAL (Portal) ==== */}
+      {createPortal(
+        <AnimatePresence>
+          {editingStudent && (
             <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-2xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
-              style={{ boxShadow: '12px 12px 0px #CCFF00' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
             >
-              <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
-                <h3 className="font-anton text-3xl text-[#CCFF00] uppercase tracking-wider">Edit Student</h3>
-                <button onClick={() => setEditingStudent(null)} className="text-[#888] hover:text-white transition-colors">
-                  <X size={28} />
-                </button>
-              </div>
-
-              <form onSubmit={handleUpdateStudent} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Full Name</label>
-                    <input
-                      type="text"
-                      value={editingStudent.fullName}
-                      onChange={(e) => setEditingStudent({...editingStudent, fullName: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Roll No</label>
-                    <input
-                      type="text"
-                      value={editingStudent.rollNo}
-                      onChange={(e) => setEditingStudent({...editingStudent, rollNo: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Mobile No</label>
-                    <input
-                      type="text"
-                      value={editingStudent.mobileNo}
-                      onChange={(e) => setEditingStudent({...editingStudent, mobileNo: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Email</label>
-                    <input
-                      type="email"
-                      value={editingStudent.email}
-                      onChange={(e) => setEditingStudent({...editingStudent, email: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Course</label>
-                    <input
-                      type="text"
-                      value={editingStudent.course}
-                      onChange={(e) => setEditingStudent({...editingStudent, course: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Branch</label>
-                    <input
-                      type="text"
-                      value={editingStudent.branch}
-                      onChange={(e) => setEditingStudent({...editingStudent, branch: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Section</label>
-                    <input
-                      type="text"
-                      value={editingStudent.section}
-                      onChange={(e) => setEditingStudent({...editingStudent, section: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Year</label>
-                    <input
-                      type="text"
-                      value={editingStudent.year}
-                      onChange={(e) => setEditingStudent({...editingStudent, year: e.target.value})}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-4 mt-8 pt-6 border-t-2 border-[#333]">
-                  <button type="submit" className="flex-1 bg-[#CCFF00] text-[#050505] font-anton text-xl uppercase py-4 border-2 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all">
-                    Save Changes
-                  </button>
-                  <button type="button" onClick={() => setEditingStudent(null)} className="flex-1 bg-transparent text-[#888] font-anton text-xl uppercase py-4 border-2 border-[#888] hover:border-white hover:text-white transition-all">
-                    Cancel
+              <motion.div
+                initial={{ scale: 0.95, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.95, y: 20 }}
+                className="relative w-full max-w-2xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+                style={{ boxShadow: '12px 12px 0px #CCFF00' }}
+              >
+                <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
+                  <h3 className="font-anton text-3xl text-[#CCFF00] uppercase tracking-wider">Edit Student</h3>
+                  <button onClick={() => setEditingStudent(null)} className="text-[#888] hover:text-white transition-colors">
+                    <X size={28} />
                   </button>
                 </div>
-              </form>
+
+                <form onSubmit={handleUpdateStudent} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Full Name</label>
+                      <input
+                        type="text"
+                        value={editingStudent.fullName}
+                        onChange={(e) => setEditingStudent({...editingStudent, fullName: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Roll No</label>
+                      <input
+                        type="text"
+                        value={editingStudent.rollNo}
+                        onChange={(e) => setEditingStudent({...editingStudent, rollNo: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Mobile No</label>
+                      <input
+                        type="text"
+                        value={editingStudent.mobileNo}
+                        onChange={(e) => setEditingStudent({...editingStudent, mobileNo: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Email</label>
+                      <input
+                        type="email"
+                        value={editingStudent.email}
+                        onChange={(e) => setEditingStudent({...editingStudent, email: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Course</label>
+                      <input
+                        type="text"
+                        value={editingStudent.course}
+                        onChange={(e) => setEditingStudent({...editingStudent, course: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Branch</label>
+                      <input
+                        type="text"
+                        value={editingStudent.branch}
+                        onChange={(e) => setEditingStudent({...editingStudent, branch: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Section</label>
+                      <input
+                        type="text"
+                        value={editingStudent.section}
+                        onChange={(e) => setEditingStudent({...editingStudent, section: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Year</label>
+                      <input
+                        type="text"
+                        value={editingStudent.year}
+                        onChange={(e) => setEditingStudent({...editingStudent, year: e.target.value})}
+                        className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4 mt-8 pt-6 border-t-2 border-[#333]">
+                    <button type="submit" className="flex-1 bg-[#CCFF00] text-[#050505] font-anton text-xl uppercase py-4 border-2 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all">
+                      Save Changes
+                    </button>
+                    <button type="button" onClick={() => setEditingStudent(null)} className="flex-1 bg-transparent text-[#888] font-anton text-xl uppercase py-4 border-2 border-[#888] hover:border-white hover:text-white transition-all">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </Layout>
   );
 }

@@ -12,19 +12,25 @@ export function FeaturedEvents() {
 
   // Display a selection of events from the hardcoded data
   const featuredList = [
-    { ...EVENT_CATEGORIES.technical.events.find(e => e.name === 'WAR OF MACHINES')!, category: 'TECHNICAL', image: EVENT_CATEGORIES.technical.image, description: EVENT_CATEGORIES.technical.events.find(e => e.name === 'WAR OF MACHINES')?.description },
-    { ...EVENT_CATEGORIES.cultural.events.find(e => e.name === 'TANZ & TWIST (Group)')!, category: 'CULTURAL', image: EVENT_CATEGORIES.cultural.image, description: EVENT_CATEGORIES.cultural.events.find(e => e.name === 'TANZ & TWIST (Group)')?.description },
-    { ...EVENT_CATEGORIES.cyber.events.find(e => e.name === 'ONLINE GAMING')!, category: 'CYBER', image: EVENT_CATEGORIES.cyber.image, description: EVENT_CATEGORIES.cyber.events.find(e => e.name === 'ONLINE GAMING')?.description },
+    {
+      ...EVENT_CATEGORIES.general.events.find(e => e.name === 'TREASURE SAFARI')!,
+      category: EVENT_CATEGORIES.general.label,
+      image: EVENT_CATEGORIES.general.image,
+      color: EVENT_CATEGORIES.general.color,
+    },
+    {
+      ...EVENT_CATEGORIES.cultural.events.find(e => e.name === 'PERSONA')!,
+      category: EVENT_CATEGORIES.cultural.label,
+      image: EVENT_CATEGORIES.cultural.image,
+      color: EVENT_CATEGORIES.cultural.color,
+    },
+    {
+      ...EVENT_CATEGORIES.cyber.events.find(e => e.name === 'ONLINE GAMING')!,
+      category: EVENT_CATEGORIES.cyber.label,
+      image: EVENT_CATEGORIES.cyber.image,
+      color: EVENT_CATEGORIES.cyber.color,
+    },
   ];
-
-  const getCatColor = (cat: string) => {
-    switch (cat) {
-      case 'TECHNICAL': return '#00FFFF';
-      case 'CULTURAL': return '#FF00FF';
-      case 'CYBER': return '#FF6B00';
-      default: return '#CCFF00';
-    }
-  };
 
   return (
     <section className="py-32 bg-[#050505] border-b-4 border-[#333] relative">
@@ -59,7 +65,6 @@ export function FeaturedEvents() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {featuredList.map((event, index) => {
-            const color = getCatColor(event.category);
             return (
               <motion.div
                 key={event.name}
@@ -76,8 +81,8 @@ export function FeaturedEvents() {
                   setIsModalOpen(true);
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = `8px 8px 0px ${color}`;
-                  (e.currentTarget as HTMLElement).style.borderColor = color;
+                  (e.currentTarget as HTMLElement).style.boxShadow = `8px 8px 0px ${event.color}`;
+                  (e.currentTarget as HTMLElement).style.borderColor = event.color;
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.boxShadow = '8px 8px 0px #333';
@@ -91,13 +96,13 @@ export function FeaturedEvents() {
                     className="w-full h-full object-cover md:grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500" />
-                  <div className="absolute top-4 right-4 text-black px-4 py-1 text-sm font-anton uppercase tracking-widest border-2 border-black transform rotate-3 group-hover:rotate-0 transition-transform" style={{ backgroundColor: color }}>
+                  <div className="absolute top-4 right-4 text-black px-4 py-1 text-sm font-anton uppercase tracking-widest border-2 border-black transform rotate-3 group-hover:rotate-0 transition-transform" style={{ backgroundColor: event.color }}>
                     {event.category}
                   </div>
                 </div>
                 
                 <div className="p-6 flex-grow flex flex-col">
-                  <h3 className="text-2xl font-anton text-white mb-2 uppercase tracking-wide group-hover:transition-colors" style={{ '--hover-color': color } as any}>
+                  <h3 className="text-2xl font-anton text-white mb-2 uppercase tracking-wide group-hover:transition-colors" style={{ '--hover-color': event.color } as any}>
                     {event.name}
                   </h3>
                   
@@ -110,7 +115,7 @@ export function FeaturedEvents() {
                   <div className="space-y-4 mb-8 pt-6 border-t-2 border-[#333]">
                     <div className="flex items-center justify-between font-space text-sm text-white uppercase tracking-wider">
                       <span>Entry Fee</span>
-                      <span className="font-anton text-2xl" style={{ color }}>₹{event.amount}</span>
+                      <span className="font-anton text-2xl" style={{ color: event.color }}>₹{event.amount}</span>
                     </div>
                     {'subEvents' in event && event.subEvents && (
                       <div className="font-space text-xs text-[#888] uppercase tracking-wider">

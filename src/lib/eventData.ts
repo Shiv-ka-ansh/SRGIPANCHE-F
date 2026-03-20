@@ -6,6 +6,7 @@ export const EVENT_CATEGORIES: Record<string, {
     name: string; 
     amount: number; 
     isTeam?: boolean; 
+    isFlat?: boolean;
     subEvents?: string[];
     description?: string;
     rules?: string[];
@@ -21,25 +22,138 @@ export const EVENT_CATEGORIES: Record<string, {
         name: 'TREASURE SAFARI', 
         amount: 50, 
         isTeam: true,
-        description: 'Unravel mysteries and find hidden riches in this ultimate campus-wide treasure hunt.'
+        description: 'Get ready for an adventure filled with mystery, excitement, and teamwork! Treasure Safari is a thrilling treasure hunt where participants race against time to decode clues and reach the final destination.',
+        rules: [
+          'Participants will compete in teams of three members.',
+          'A series of clues and puzzles will be provided at each stage.',
+          'Each clue leads to the next checkpoint, testing logic and coordination.',
+          'The team that successfully solves all clues and reaches the end first emerges as the winner.'
+        ]
       },
-      { name: 'THE PERFECT CLICK', amount: 50, description: 'Capture the essence of Panache through your lens in this photography challenge.' },
-      { name: 'NAIL ART', amount: 50, description: 'Let your fingernails be the canvas for your most creative and vibrant designs.' },
-      { name: 'PARICHARCHA', amount: 50, description: 'Engage in a battle of wits and words in this stimulating group discussion.' },
-      { name: 'SELFIE MANIAC', amount: 50, description: 'Show off your best angles and creativity in the ultimate selfie competition.' },
-      { name: 'ATTIRE', amount: 100, description: 'Walk the ramp and showcase your unique style and fashion statement.' },
-      { name: 'SANYOG SE', amount: 25, description: 'A fun game of luck and chance where anyone can be a winner.' },
-      { name: 'SAND ART', amount: 50, description: 'Construct intricate and beautiful masterpieces using nothing but sand and water.' },
-      { name: 'THE SLOGANEER', amount: 50, description: 'Craft powerful and catchy slogans that resonate with the spirit of the fest.' },
-      { name: 'ISTEHAAAR', amount: 50, description: 'Design compelling advertisements and posters for real or imaginary products.' },
-      { name: 'ESPRIT DE CORPS', amount: 50, isTeam: true, description: 'A team-building challenge that tests your coordination and collective spirit.' },
-      { name: 'CROSSWORD', amount: 50, description: 'Solve complex puzzles and test your vocabulary in this classic word game.' },
-      { name: 'FACE PAINTING', amount: 50, description: 'Transform faces into living art with your exceptional brush and color skills.' },
-      { name: 'LITERARY', amount: 50, description: 'A showcase of creative writing, poetry, and linguistic prowess.' },
-      { name: 'FINE ARTS', amount: 50, description: 'Display your traditional art skills, from sketching to painting on canvas.' },
-      { name: 'ARM WRESTLING', amount: 50, description: 'A test of raw strength and endurance in a classic one-on-one showdown.' },
-      { name: 'RANGOLI', amount: 50, description: 'Create stunning traditional patterns on the floor with vibrant colors.' },
-      { name: 'MEHENDI', amount: 50, description: 'Apply intricate and beautiful henna designs in this traditional art competition.' },
+      { 
+        name: 'PARICHARCHA', 
+        amount: 50, 
+        description: 'Paricharcha is an engaging debate competition where participants present their ideas, challenge perspectives, and showcase their speaking skills.',
+        rules: [
+          'Topics will be provided for discussion.',
+          'Focus on clarity, confidence, and logical arguments.',
+          'Judging will be based on content, delivery, and rebuttal.'
+        ]
+      },
+      { 
+        name: 'NAIL ART', 
+        amount: 50, 
+        description: 'Unleash your creativity and showcase your artistic flair with Nail Art! This event is all about transforming nails into stunning works of art using unique designs and techniques.',
+        rules: [
+          'Participants will create creative and innovative nail designs.',
+          'Focus on creativity, precision, and overall presentation.',
+          'Judging will be based on originality, detailing, and aesthetic appeal.'
+        ]
+      },
+      { 
+        name: 'ATTIRE', 
+        amount: 100, 
+        description: 'Step into the spotlight and let your style tell a story! Attire is a vibrant ramp-based event where participants showcase their creativity, confidence, and fashion sense through thoughtfully curated outfits.',
+        rules: [
+          'Participants will present their look based on the given theme.',
+          'Focus on creativity, confidence, and overall presentation.',
+          'Judging will be based on styling, expression, and stage presence.'
+        ]
+      },
+      { 
+        name: 'SANYOG SE', 
+        amount: 25, 
+        description: 'What if luck is all you need to win? Sanyog Se is an exciting luck-based event where every draw brings a new surprise and endless anticipation.',
+        rules: [
+          'Participants will take part in a random lucky draw.',
+          'Each pick unlocks a surprise outcome, making every moment thrilling.',
+          'No skills required—just trust your luck and enjoy the ride!'
+        ]
+      },
+      { 
+        name: 'SAND ART', 
+        amount: 50, 
+        description: 'Watch creativity come alive, one grain at a time! Sand Art is a captivating event where imagination meets skill, transforming simple sand into stunning visual stories.',
+        rules: [
+          'Participants will create unique designs and patterns using sand.',
+          'Focus on creativity, detailing, and presentation.',
+          'Judging will be based on originality, technique, and overall visual impact.'
+        ]
+      },
+      { 
+        name: 'CROSSWORD', 
+        amount: 50, 
+        description: 'Put your vocabulary and thinking skills to the test! Crossword is a fun and engaging word puzzle event that challenges your knowledge and presence of mind.',
+        rules: [
+          'Participants will solve a crossword puzzle within a given time.',
+          'Focus on vocabulary, logical thinking, and speed.',
+          'Judging will be based on accuracy and completion time.'
+        ]
+      },
+      { 
+        name: 'ISHTEHAR', 
+        amount: 50, 
+        description: 'Turn your ideas into impactful visuals! Ishtehar is a poster-making event where creativity meets expression, allowing participants to convey powerful messages through art.',
+        rules: [
+          'Participants will design posters based on the given theme.',
+          'Focus on creativity, clarity of message, and visual appeal.',
+          'Judging will be based on originality, design, and presentation.'
+        ]
+      },
+      { 
+        name: 'FACE PAINTING', 
+        amount: 50, 
+        description: 'Turn faces into living canvases and let your imagination run wild! Face Painting is a vibrant and expressive event where creativity, colors, and artistry come together to create stunning transformations.',
+        rules: [
+          'Participants will design and paint creative themes on faces.',
+          'Focus on creativity, detailing, and color harmony.',
+          'Judging will be based on originality, precision, and overall impact.'
+        ]
+      },
+      { 
+        name: 'RANGOLI', 
+        amount: 50, 
+        description: 'Not just colors, it’s a whole vibe! Rangoli is where creativity meets tradition, and the ground becomes your canvas to create something truly eye-catching.',
+        rules: [
+          'Participants will design vibrant rangoli based on the given theme.',
+          'Show your creativity, symmetry, and color game.',
+          'Judging will be based on originality, detailing, and overall impact.'
+        ]
+      },
+      { 
+        name: 'ARM WRESTLING', 
+        amount: 50, 
+        description: 'Ready to test your strength and dominance? Arm Wrestling is a high-energy face-off where power, technique, and determination come into play!',
+        rules: [
+          'Participants will compete in one-on-one arm wrestling matches.',
+          'Focus on strength, grip, and strategy.',
+          'Winners will advance through knockout rounds to claim victory.'
+        ]
+      },
+      { 
+        name: 'SELFIE MANIAC', 
+        amount: 50, 
+        description: 'Unleash your inner selfie star in the Selfie Maniac Event! This fun-filled competition is all about confidence, creativity, and capturing your best self in the most unique way possible.' 
+      },
+      { 
+        name: 'ESPRIT DE CORPS', 
+        amount: 50, 
+        isTeam: true,
+        description: 'Step into the spirit of teamwork with Esprit De Corps, an event that celebrates unity, coordination, and collective strength.',
+        rules: [
+          'This event will test your communication, trust, leadership, and team synergy in exciting and competitive tasks.'
+        ]
+      },
+      { 
+        name: 'THE SLOGANEER', 
+        amount: 50, 
+        description: 'Unleash the power of words in Sloganeer, where creativity meets impact! This event challenges participants to craft short, catchy, and meaningful slogans.' 
+      },
+      { 
+        name: 'THE PERFECT CLICK', 
+        amount: 50, 
+        description: 'Showcase your photography skills in the Perfect Click Event! This exciting competition is all about capturing the perfect shot that tells a story.' 
+      },
     ]
   },
   technical: {
@@ -83,6 +197,7 @@ export const EVENT_CATEGORIES: Record<string, {
         name: 'TANZ & TWIST (Group)', 
         amount: 500, 
         isTeam: true,
+        isFlat: true,
         description: 'A spectacular fusion of dance, rhythm, and synchronization. Teams compete for the crown of the dance floor.',
         rules: [
           'Minimum 4 and maximum 12 members per team.',
@@ -94,7 +209,7 @@ export const EVENT_CATEGORIES: Record<string, {
           { name: 'Ananya Verma', phone: '+91 7654321098' }
         ]
       },
-      { name: 'NUKKAD NATAK', amount: 500, isTeam: true, description: 'Powerful street plays that address social issues with drama and energy.' },
+      { name: 'NUKKAD NATAK', amount: 500, isTeam: true, isFlat: true, description: 'Powerful street plays that address social issues with drama and energy.' },
       { name: 'STAND-UP COMEDY', amount: 50, description: 'Tickle the funny bone and win the crowd over with your wit and humor.' },
       { name: 'DRAMATICS', amount: 50, isTeam: true, description: 'A stage play competition where teams bring कहानियाँ (stories) to life.' },
     ]
