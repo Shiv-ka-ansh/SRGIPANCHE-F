@@ -169,6 +169,7 @@ export function Dashboard() {
 
   const handleConfirmSingle = async () => {
     if (!student || selectedEvents.length === 0) return;
+    if (!window.confirm(`Are you sure you have received ₹${totalAmount}? Dashboard will be reset after success.`)) return;
     setSubmitting(true);
     try {
       const { data } = await api.post('/event-registrations', {
@@ -177,8 +178,12 @@ export function Dashboard() {
         isGroup: false,
       });
       if (data.success) {
-        toast.success('Events registered successfully!');
-        setRegistrationDone(true);
+        toast.success(`Events registered! Total: ₹${totalAmount}`, { duration: 5000 });
+        // Reset dashboard directly as requested: "success hone ke baad bapas se admin dashboard pe aajayega"
+        setStudent(null);
+        setTokenInput('');
+        setSelectedEvents([]);
+        setRegistrationDone(false); // We can skip the success state and just reset
       }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to register events');
@@ -196,6 +201,7 @@ export function Dashboard() {
       toast.error('Please add team members');
       return;
     }
+    if (!window.confirm(`Are you sure you have received ₹${totalAmount}? Dashboard will be reset after success.`)) return;
     setSubmitting(true);
     try {
       const leader = groupMembersList[0];
@@ -210,8 +216,12 @@ export function Dashboard() {
         participantIds: participantIds
       });
       if (data.success) {
-        toast.success('Group Events registered successfully!');
-        setRegistrationDone(true);
+        toast.success(`Group Events registered! Total: ₹${totalAmount}`, { duration: 5000 });
+        // Reset dashboard
+        setGroupMembersList([]);
+        setGroupTokenInput('');
+        setSelectedEvents([]);
+        setRegistrationDone(false);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to register events');
@@ -793,6 +803,46 @@ export function Dashboard() {
                       type="email"
                       value={editingStudent.email}
                       onChange={(e) => setEditingStudent({...editingStudent, email: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Course</label>
+                    <input
+                      type="text"
+                      value={editingStudent.course}
+                      onChange={(e) => setEditingStudent({...editingStudent, course: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Branch</label>
+                    <input
+                      type="text"
+                      value={editingStudent.branch}
+                      onChange={(e) => setEditingStudent({...editingStudent, branch: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Section</label>
+                    <input
+                      type="text"
+                      value={editingStudent.section}
+                      onChange={(e) => setEditingStudent({...editingStudent, section: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Year</label>
+                    <input
+                      type="text"
+                      value={editingStudent.year}
+                      onChange={(e) => setEditingStudent({...editingStudent, year: e.target.value})}
                       className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
                       required
                     />

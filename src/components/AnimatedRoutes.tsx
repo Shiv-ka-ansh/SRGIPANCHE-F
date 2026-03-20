@@ -45,7 +45,7 @@ export function AnimatedRoutes() {
           <Route 
             path="/superadmin/dashboard" 
             element={
-              <ProtectedRoute requireSuperAdmin>
+              <ProtectedRoute requireAdmin>
                 <PageTransition><SuperAdminDashboard /></PageTransition>
               </ProtectedRoute>
             } 

@@ -24,7 +24,9 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
 
 export function Dashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('overview');
+  const [activeTab, setActiveTab] = useState<Tab>(
+    (user?.role === 'superadmin' || user?.allowedTabs?.includes('overview')) ? 'overview' : (user?.allowedTabs?.[0] as Tab || 'students')
+  );
   const [loading, setLoading] = useState(false);
 
   // Overview / Analytics
@@ -39,6 +41,7 @@ export function Dashboard() {
   // Events
   const [eventsList, setEventsList] = useState<any[]>([]);
   const [editingEvent, setEditingEvent] = useState<string | null>(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [eventForm, setEventForm] = useState({ 
     category: '', 
     name: '', 
@@ -52,6 +55,7 @@ export function Dashboard() {
 
   // Registrations
   const [registrations, setRegistrations] = useState<any[]>([]);
+  const [editingReg, setEditingReg] = useState<any>(null);
   
   // Schedule
   const [scheduleEntries, setScheduleEntries] = useState<any[]>([]);
@@ -60,12 +64,12 @@ export function Dashboard() {
   
   // Users
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
-  const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '', role: 'admin' });
+  const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['students', 'registrations'] });
 
   useEffect(() => {
     if (activeTab === 'overview') fetchAnalytics();
     if (activeTab === 'students') fetchStudents();
-    if (activeTab === 'events') fetchEventsList();
+    if (activeTab === 'events' || activeTab === 'registrations') fetchEventsList();
     if (activeTab === 'registrations') fetchRegistrations();
     if (activeTab === 'schedule') fetchSchedule();
     if (activeTab === 'users') fetchUsers();
@@ -109,7 +113,8 @@ export function Dashboard() {
     setLoading(false);
   };
 
-  const handleSaveEvent = async () => {
+  const handleSaveEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       const subEventsArray = eventForm.subEvents ? eventForm.subEvents.split(',').map(s => s.trim()).filter(Boolean) : [];
       const rulesArray = eventForm.rulesText ? eventForm.rulesText.split('\n').map(s => s.trim()).filter(Boolean) : [];
@@ -132,6 +137,7 @@ export function Dashboard() {
         await api.post('/events', payload);
         toast.success('Event added');
       }
+      setIsEventModalOpen(false);
       setEditingEvent(null);
       setEventForm({ 
         category: '', 
@@ -163,6 +169,24 @@ export function Dashboard() {
       setRegistrations(data.registrations);
     } catch { toast.error('Failed to load registrations'); }
     setLoading(false);
+  };
+
+  const handleUpdateReg = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingReg) return;
+    try {
+      await api.put(`/event-registrations/${editingReg._id}`, {
+        studentName: editingReg.studentName,
+        rollNo: editingReg.rollNo,
+        totalAmount: editingReg.totalAmount,
+        isGroup: editingReg.isGroup,
+        events: editingReg.events,
+        remark: editingReg.remark
+      });
+      toast.success('Registration updated');
+      setEditingReg(null);
+      fetchRegistrations();
+    } catch { toast.error('Failed to update registration'); }
   };
 
   const fetchSchedule = async () => {
@@ -211,7 +235,7 @@ export function Dashboard() {
     try {
       await api.post('/users', newAdmin);
       toast.success('Admin created');
-      setNewAdmin({ name: '', email: '', password: '', role: 'admin' });
+      setNewAdmin({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['students', 'registrations'] });
       fetchUsers();
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Failed to create admin');
@@ -241,6 +265,7 @@ export function Dashboard() {
   };
 
   const inputClass = "w-full bg-[#050505] font-space text-white text-sm border-2 border-[#333] p-3 outline-none focus:border-[#CCFF00] transition-colors";
+  const labelClass = "block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2";
 
   return (
     <Layout>
@@ -252,9 +277,11 @@ export function Dashboard() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
               <h1 className="text-4xl md:text-5xl font-anton text-white uppercase tracking-tight">
-                SUPER <span className="text-[#FF00FF]">ADMIN</span>
+                {user?.role === 'superadmin' ? 'SUPER ' : ''}<span className="text-[#FF00FF]">ADMIN</span>
               </h1>
-              <p className="font-space text-[#888] text-xs uppercase tracking-widest mt-1">Full System Control</p>
+              <p className="font-space text-[#888] text-xs uppercase tracking-widest mt-1">
+                {user?.role === 'superadmin' ? 'Full System Control' : 'System Access Restricted'}
+              </p>
             </div>
             <button onClick={logout} className="font-space font-bold text-xs uppercase tracking-widest border-2 border-[#333] text-[#888] px-4 py-2 hover:border-red-500 hover:text-red-500 transition-colors flex items-center gap-2">
               <LogOut size={14} /> Logout
@@ -263,7 +290,7 @@ export function Dashboard() {
 
           {/* Tab Bar */}
           <div className="flex flex-wrap gap-2 mb-8 bg-[#121212] border-2 border-[#333] p-2">
-            {TABS.map(tab => (
+            {TABS.filter(t => user?.role === 'superadmin' || user?.allowedTabs?.includes(t.key)).map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
@@ -290,9 +317,9 @@ export function Dashboard() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard label="Total Students" value={stats.totalStudents} color="#CCFF00" />
                 <StatCard label="Processed" value={stats.processedStudents} color="#00FFFF" />
-                <StatCard label="Total Revenue" value={`₹${stats.totalRevenue}`} color="#FF00FF" />
+                {user?.role === 'superadmin' && <StatCard label="Total Revenue" value={`₹${stats.totalRevenue}`} color="#FF00FF" />}
               </div>
-              {stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
+              {user?.role === 'superadmin' && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
                 <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
                   <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">Revenue by Category</h3>
                   <div className="space-y-4">
@@ -349,7 +376,7 @@ export function Dashboard() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-[#050505] border-b-4 border-[#333]">
-                        {['Name', 'Roll No', 'Token', 'Course', 'Branch', 'Mobile', 'Email', 'Actions'].map(h => (
+                        {['Name', 'Roll No', 'Token', 'Course/Branch', 'Contact', 'Joined At', 'Actions'].map(h => (
                           <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
                         ))}
                       </tr>
@@ -360,10 +387,18 @@ export function Dashboard() {
                           <td className="p-4 font-space font-bold text-white text-sm">{s.fullName}</td>
                           <td className="p-4 font-space text-[#aaa] text-sm">{s.rollNo}</td>
                           <td className="p-4 font-space font-bold text-[#CCFF00] text-sm tracking-[0.2em]">{s.token}</td>
-                          <td className="p-4 font-space text-[#aaa] text-sm">{s.course}</td>
-                          <td className="p-4 font-space text-[#aaa] text-sm">{s.branch}</td>
-                          <td className="p-4 font-space text-[#aaa] text-sm">{s.mobileNo}</td>
-                          <td className="p-4 font-space text-[#aaa] text-sm">{s.email}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">
+                            <span className="text-white font-bold">{s.course}</span><br/>
+                            {s.branch}
+                          </td>
+                          <td className="p-4 font-space text-[#aaa] text-xs">
+                             <span className="text-white">{s.mobileNo}</span><br/>
+                             {s.email}
+                          </td>
+                          <td className="p-4 font-space text-[#888] text-xs leading-tight">
+                            {s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '-'}<br/>
+                            <span className="opacity-60">{s.createdAt ? new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                          </td>
                           <td className="p-4">
                             <button
                               onClick={() => setEditingStudent(s)}
@@ -387,47 +422,27 @@ export function Dashboard() {
           {/* ==== EVENTS CATALOG ==== */}
           {!loading && activeTab === 'events' && (
             <div className="space-y-8">
-              <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
-                <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">{editingEvent ? 'Edit Event' : 'Add New Event'}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  <input placeholder="Category" value={eventForm.category} onChange={e => setEventForm({...eventForm, category: e.target.value})} className={inputClass} />
-                  <input placeholder="Event Name" value={eventForm.name} onChange={e => setEventForm({...eventForm, name: e.target.value})} className={inputClass} />
-                  <input type="number" placeholder="Entry Amount" value={eventForm.amount || ''} onChange={e => setEventForm({...eventForm, amount: Number(e.target.value)})} className={inputClass} />
-                  <div className="flex gap-2 items-center bg-[#050505] border-2 border-[#333] p-3 focus-within:border-[#CCFF00]">
-                    <span className="font-space text-[#888] text-xs uppercase tracking-widest">Color</span>
-                    <input type="color" value={eventForm.color} onChange={e => setEventForm({...eventForm, color: e.target.value})} className="w-6 h-6 border-0 bg-transparent cursor-pointer ml-auto" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <input placeholder="Sub Events (comma separated)" value={eventForm.subEvents} onChange={e => setEventForm({...eventForm, subEvents: e.target.value})} className={inputClass} />
-                  <textarea placeholder="Event Description" value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} className={inputClass + " h-14"} />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <textarea placeholder="Rules (one per line)" value={eventForm.rulesText} onChange={e => setEventForm({...eventForm, rulesText: e.target.value})} className={inputClass + " h-24"} />
-                  <textarea placeholder="Coordinators (format Name:Phone, one per line)" value={eventForm.coordinatorsText} onChange={e => setEventForm({...eventForm, coordinatorsText: e.target.value})} className={inputClass + " h-24"} />
-                </div>
-                <div className="flex gap-4">
-                  <button onClick={handleSaveEvent} className="bg-[#CCFF00] text-[#050505] font-space font-bold text-sm uppercase px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2">
-                    <Plus size={16} /> {editingEvent ? 'Update' : 'Add Event'}
-                  </button>
-                  {editingEvent && (
-                    <button onClick={() => { 
-                      setEditingEvent(null); 
-                      setEventForm({ 
-                        category: '', 
-                        name: '', 
-                        amount: 0, 
-                        subEvents: '', 
-                        color: '#00FFFF',
-                        description: '',
-                        rulesText: '',
-                        coordinatorsText: ''
-                      }); 
-                    }} className="font-space font-bold text-sm uppercase px-6 py-3 border-2 border-[#888] text-[#888] hover:text-white hover:border-white transition-colors">
-                      Cancel
-                    </button>
-                  )}
-                </div>
+              <div className="flex justify-between items-center">
+                <h2 className="font-anton text-3xl text-white uppercase">Events Catalog</h2>
+                <button 
+                  onClick={() => {
+                    setEditingEvent(null);
+                    setEventForm({ 
+                      category: '', 
+                      name: '', 
+                      amount: 0, 
+                      subEvents: '', 
+                      color: '#00FFFF',
+                      description: '',
+                      rulesText: '',
+                      coordinatorsText: ''
+                    });
+                    setIsEventModalOpen(true);
+                  }}
+                  className="bg-[#CCFF00] text-[#050505] font-anton px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2"
+                >
+                  <Plus size={20} /> Add New Event
+                </button>
               </div>
 
               <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
@@ -462,6 +477,7 @@ export function Dashboard() {
                                   coordinatorsText: ev.coordinators?.map((c: any) => `${c.name}:${c.phone}`).join('\n') || '',
                                   description: ev.description || ''
                                 }); 
+                                setIsEventModalOpen(true);
                               }} className="p-2 border border-[#CCFF00] text-[#CCFF00] hover:bg-[#CCFF00] hover:text-[#050505] transition-colors">
                                 <Edit size={14} />
                               </button>
@@ -486,7 +502,7 @@ export function Dashboard() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-[#050505] border-b-4 border-[#333]">
-                      {['Student/Team Leader', 'Roll No', 'Type', 'Events', 'Total', 'Processed By', 'Date'].map(h => (
+                      {['Student/Team Leader', 'Roll No', 'Type', 'Events', 'Total', 'Processed By', 'Date', 'Actions'].map(h => (
                         <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
                       ))}
                     </tr>
@@ -512,7 +528,18 @@ export function Dashboard() {
                         </td>
                         <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{r.totalAmount}</td>
                         <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td>
-                        <td className="p-4 font-space text-[#888] text-xs">{new Date(r.processedAt).toLocaleDateString()}</td>
+                        <td className="p-4 font-space text-[#888] text-xs leading-tight">
+                          {new Date(r.processedAt).toLocaleDateString()}<br/>
+                          <span className="opacity-60">{new Date(r.processedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </td>
+                        <td className="p-4">
+                             <button
+                               onClick={() => setEditingReg(r)}
+                               className="font-space font-bold text-xs uppercase tracking-widest px-3 py-1 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-2"
+                             >
+                               <Edit size={12} /> Edit
+                             </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -604,11 +631,39 @@ export function Dashboard() {
                   <input placeholder="Name" value={newAdmin.name} onChange={e => setNewAdmin({...newAdmin, name: e.target.value})} className={inputClass} />
                   <input placeholder="Email" type="email" value={newAdmin.email} onChange={e => setNewAdmin({...newAdmin, email: e.target.value})} className={inputClass} />
                   <PasswordInput placeholder="Password" value={newAdmin.password} onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} className={inputClass} />
-                  <select value={newAdmin.role} onChange={e => setNewAdmin({...newAdmin, role: e.target.value})} className={inputClass}>
+                  <select value={newAdmin.role} onChange={e => setNewAdmin({...newAdmin, role: e.target.value as any})} className={inputClass}>
                     <option value="admin">Admin</option>
                     <option value="superadmin">Super Admin</option>
                   </select>
                 </div>
+
+                {newAdmin.role === 'admin' && (
+                  <div className="mb-6">
+                    <label className={labelClass}>Tab Access Permissions</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {TABS.map(tab => (
+                        <label key={tab.key} className={`flex items-center gap-2 p-2 border-2 cursor-pointer transition-all ${newAdmin.allowedTabs.includes(tab.key) ? 'border-[#CCFF00] bg-[#CCFF00]/5 text-[#CCFF00]' : 'border-[#222] text-[#888]'}`}>
+                          <input 
+                            type="checkbox"
+                            className="hidden"
+                            checked={newAdmin.allowedTabs.includes(tab.key)}
+                            onChange={() => {
+                              const current = newAdmin.allowedTabs;
+                              const updated = current.includes(tab.key) 
+                                ? current.filter(t => t !== tab.key)
+                                : [...current, tab.key];
+                              setNewAdmin({...newAdmin, allowedTabs: updated});
+                            }}
+                          />
+                          <div className={`w-4 h-4 border flex items-center justify-center ${newAdmin.allowedTabs.includes(tab.key) ? 'bg-[#CCFF00] border-[#CCFF00]' : 'border-[#444]'}`}>
+                            {newAdmin.allowedTabs.includes(tab.key) && <X size={10} className="text-black" />}
+                          </div>
+                          <span className="font-space text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <button onClick={handleCreateAdmin} className="bg-[#CCFF00] text-[#050505] font-space font-bold text-sm uppercase px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2">
                   <UserPlus size={16} /> Create Admin
                 </button>
@@ -713,6 +768,7 @@ export function Dashboard() {
                       value={editingStudent.fullName}
                       onChange={(e) => setEditingStudent({...editingStudent, fullName: e.target.value})}
                       className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
                     />
                   </div>
                   <div>
@@ -722,6 +778,7 @@ export function Dashboard() {
                       value={editingStudent.rollNo}
                       onChange={(e) => setEditingStudent({...editingStudent, rollNo: e.target.value})}
                       className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
                     />
                   </div>
                   <div>
@@ -731,6 +788,7 @@ export function Dashboard() {
                       value={editingStudent.mobileNo}
                       onChange={(e) => setEditingStudent({...editingStudent, mobileNo: e.target.value})}
                       className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
                     />
                   </div>
                   <div>
@@ -740,6 +798,47 @@ export function Dashboard() {
                       value={editingStudent.email}
                       onChange={(e) => setEditingStudent({...editingStudent, email: e.target.value})}
                       className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Course</label>
+                    <input
+                      type="text"
+                      value={editingStudent.course}
+                      onChange={(e) => setEditingStudent({...editingStudent, course: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Branch</label>
+                    <input
+                      type="text"
+                      value={editingStudent.branch}
+                      onChange={(e) => setEditingStudent({...editingStudent, branch: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Section</label>
+                    <input
+                      type="text"
+                      value={editingStudent.section}
+                      onChange={(e) => setEditingStudent({...editingStudent, section: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Year</label>
+                    <input
+                      type="text"
+                      value={editingStudent.year}
+                      onChange={(e) => setEditingStudent({...editingStudent, year: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#CCFF00]"
+                      required
                     />
                   </div>
                 </div>
@@ -749,6 +848,216 @@ export function Dashboard() {
                     Save Changes
                   </button>
                   <button type="button" onClick={() => setEditingStudent(null)} className="flex-1 bg-transparent text-[#888] font-anton text-xl uppercase py-4 border-2 border-[#888] hover:border-white hover:text-white transition-all">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT REGISTRATION MODAL */}
+      <AnimatePresence>
+        {editingReg && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-2xl bg-[#121212] border-4 border-[#FF00FF] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+              style={{ boxShadow: '12px 12px 0px #FF00FF' }}
+            >
+              <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
+                <h3 className="font-anton text-3xl text-[#FF00FF] uppercase tracking-wider">Edit Registration</h3>
+                <button onClick={() => setEditingReg(null)} className="text-[#888] hover:text-white transition-colors">
+                  <X size={28} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateReg} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Student Name</label>
+                    <input
+                      type="text"
+                      value={editingReg.studentName}
+                      onChange={(e) => setEditingReg({...editingReg, studentName: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#FF00FF]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Roll No</label>
+                    <input
+                      type="text"
+                      value={editingReg.rollNo}
+                      onChange={(e) => setEditingReg({...editingReg, rollNo: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#FF00FF]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Total Amount (₹)</label>
+                    <input
+                      type="number"
+                      value={editingReg.totalAmount}
+                      onChange={(e) => setEditingReg({...editingReg, totalAmount: Number(e.target.value)})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#FF00FF]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Registration Type</label>
+                    <select
+                      value={editingReg.isGroup ? 'true' : 'false'}
+                      onChange={(e) => setEditingReg({...editingReg, isGroup: e.target.value === 'true'})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#FF00FF]"
+                      required
+                    >
+                      <option value="false">SINGLE</option>
+                      <option value="true">GROUP</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* EVENTS LIST IN REGISTRATION MODAL */}
+                <div className="mt-6">
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-3">Registered Events</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto bg-[#050505] p-4 border-2 border-[#333]">
+                        {eventsList.map(event => {
+                            const isSelected = editingReg.events.some((e: any) => e.eventName === event.name);
+                            return (
+                                <label key={event._id} className={`flex items-center gap-3 p-2 border-2 transition-all cursor-pointer ${isSelected ? 'border-[#CCFF00] bg-[#CCFF00]/5' : 'border-[#222] opacity-60'}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => {
+                                            let newEvents;
+                                            if (isSelected) {
+                                                newEvents = editingReg.events.filter((e: any) => e.eventName !== event.name);
+                                            } else {
+                                                newEvents = [...editingReg.events, { eventName: event.name, amount: event.amount, category: event.category }];
+                                            }
+                                            // Auto recalculate amount
+                                            const newTotal = newEvents.reduce((sum: number, ev: any) => sum + (ev.amount || 0), 0);
+                                            setEditingReg({...editingReg, events: newEvents, totalAmount: newTotal});
+                                        }}
+                                        className="hidden"
+                                    />
+                                    <div className={`w-4 h-4 border-2 flex items-center justify-center ${isSelected ? 'border-[#CCFF00] bg-[#CCFF00]' : 'border-[#444]'}`}>
+                                        {isSelected && <X size={10} className="text-[#050505]" />}
+                                    </div>
+                                    <span className="font-space text-xs font-bold uppercase tracking-wider text-white truncate">{event.name}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* REMARK FIELD */}
+                <div className="mt-6">
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Remark (Reason for change)</label>
+                    <textarea 
+                      placeholder="Enter reason for updating this registration..."
+                      value={editingReg.remark || ''}
+                      onChange={(e) => setEditingReg({...editingReg, remark: e.target.value})}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space text-sm focus:outline-none focus:border-[#FF00FF] h-20 resize-none"
+                    />
+                </div>
+
+                <div className="flex gap-4 mt-8 pt-6 border-t-2 border-[#333]">
+                  <button type="submit" className="flex-1 bg-[#FF00FF] text-white font-anton text-xl uppercase py-4 border-2 border-white hover:bg-[#CCFF00] hover:text-black transition-all">
+                    Update Registration
+                  </button>
+                  <button type="button" onClick={() => setEditingReg(null)} className="flex-1 bg-transparent text-[#888] font-anton text-xl uppercase py-4 border-2 border-[#888] hover:border-white hover:text-white transition-all">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT EVENT MODAL */}
+      <AnimatePresence>
+        {isEventModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="w-full max-w-4xl bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-8 overflow-y-auto max-h-[90vh]"
+              style={{ boxShadow: '12px 12px 0px #CCFF00' }}
+            >
+              <div className="flex justify-between items-center mb-6 border-b-2 border-[#333] pb-4">
+                <h3 className="font-anton text-3xl text-[#CCFF00] uppercase tracking-wider">{editingEvent ? 'Edit Event' : 'Add New Event'}</h3>
+                <button onClick={() => setIsEventModalOpen(false)} className="text-[#888] hover:text-white transition-colors">
+                  <X size={28} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEvent} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="md:col-span-2">
+                    <label className={labelClass}>Event Name</label>
+                    <input placeholder="E.G. CODING COMPETITION" value={eventForm.name} onChange={e => setEventForm({...eventForm, name: e.target.value})} className={inputClass} required />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Category</label>
+                    <input placeholder="E.G. TECHNICAL" value={eventForm.category} onChange={e => setEventForm({...eventForm, category: e.target.value})} className={inputClass} required />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Amount (₹)</label>
+                    <input type="number" placeholder="0" value={eventForm.amount || ''} onChange={e => setEventForm({...eventForm, amount: Number(e.target.value)})} className={inputClass} required />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Sub Events (comma separated)</label>
+                    <input placeholder="Round 1, Final Round..." value={eventForm.subEvents} onChange={e => setEventForm({...eventForm, subEvents: e.target.value})} className={inputClass} />
+                  </div>
+                  <div>
+                    <label className={labelClass}>Event Color</label>
+                    <div className="flex gap-2 items-center bg-[#050505] border-2 border-[#333] p-3">
+                        <input type="color" value={eventForm.color} onChange={e => setEventForm({...eventForm, color: e.target.value})} className="w-full h-8 border-0 bg-transparent cursor-pointer" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                    <label className={labelClass}>Description</label>
+                    <textarea placeholder="Tell us about the event..." value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} className={inputClass + " h-24 resize-none"} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className={labelClass}>Rules (One per line)</label>
+                        <textarea placeholder="1. Respect everyone&#10;2. No cheating" value={eventForm.rulesText} onChange={e => setEventForm({...eventForm, rulesText: e.target.value})} className={inputClass + " h-32 resize-none"} />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Coordinators (Format: Name:Phone)</label>
+                        <textarea placeholder="John Doe:9876543210&#10;Jane Smith:1234567890" value={eventForm.coordinatorsText} onChange={e => setEventForm({...eventForm, coordinatorsText: e.target.value})} className={inputClass + " h-32 resize-none"} />
+                    </div>
+                </div>
+
+                <div className="flex gap-4 mt-8 pt-6 border-t-2 border-[#333]">
+                  <button type="submit" className="flex-1 bg-[#CCFF00] text-[#050505] font-anton text-xl uppercase py-4 border-2 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all">
+                    {editingEvent ? 'Update Event' : 'Create Event'}
+                  </button>
+                  <button type="button" onClick={() => setIsEventModalOpen(false)} className="flex-1 bg-transparent text-[#888] font-anton text-xl uppercase py-4 border-2 border-[#888] hover:border-white hover:text-white transition-all">
                     Cancel
                   </button>
                 </div>

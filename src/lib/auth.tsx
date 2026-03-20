@@ -6,6 +6,7 @@ export interface User {
   name: string;
   email: string;
   role: 'admin' | 'superadmin';
+  allowedTabs?: string[];
 }
 
 interface AuthContextType {
