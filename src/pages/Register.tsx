@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout } from '../components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Loader2, CheckCircle2, Copy, Check } from 'lucide-react';
+import { UserPlus, Loader2, CheckCircle2, Copy, Check, X } from 'lucide-react';
 import api from '../lib/api';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -19,6 +19,7 @@ export function Register() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [token, setToken] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -37,15 +38,22 @@ export function Register() {
     }
 
     setLoading(true);
+    setError(null);
     try {
       const { data } = await api.post('/students/register', formData);
       if (data.success) {
         setToken(data.token);
         setSuccess(true);
-        toast.success('Registration successful!');
+        toast.success('Registration successful!', {
+          style: { background: '#CCFF00', color: '#050505', borderRadius: '0', border: '4px solid #050505' }
+        });
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Registration failed');
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Registration failed';
+      setError(msg);
+      toast.error(msg, {
+        style: { background: '#FF00FF', color: '#050505', borderRadius: '0', border: '4px solid #050505' }
+      });
     } finally {
       setLoading(false);
     }
@@ -127,6 +135,22 @@ export function Register() {
             className="bg-[#121212] border-4 border-[#333] p-8 md:p-12 space-y-6"
             style={{ boxShadow: "12px 12px 0px #333" }}
           >
+            {/* Error Message Box */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-red-500/10 border-4 border-red-500 p-4 mb-6"
+                >
+                  <p className="font-space font-bold text-red-500 text-sm uppercase tracking-wider flex items-center gap-2">
+                    <X size={18} /> {error}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Full Name */}
             <div>
               <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">

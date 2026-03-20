@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../../components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Loader2, CheckCircle2, User, Hash, Phone, Mail, BookOpen, Users, List, Edit, X, Plus, Trash2 } from 'lucide-react';
+import { Search, Loader2, CheckCircle2, User, Hash, Phone, Mail, BookOpen, Users, List, Edit, X, Plus, Trash2, AlertTriangle } from 'lucide-react';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { useAuth } from '../../lib/auth';
 import api from '../../lib/api';
 import { EVENT_CATEGORIES } from '../../lib/eventData';
@@ -67,6 +68,21 @@ export function Dashboard() {
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [resendingEmails, setResendingEmails] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentData | null>(null);
+
+  // Custom Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmLabel?: string;
+    confirmColor?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (activeTab === 'students') {
@@ -171,7 +187,20 @@ export function Dashboard() {
 
   const handleConfirmSingle = async () => {
     if (!student || selectedEvents.length === 0) return;
-    if (!window.confirm(`Are you sure you have received ₹${totalAmount}? Dashboard will be reset after success.`)) return;
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Registration',
+      message: `Are you sure you have received ₹${totalAmount}? This will register ${student.fullName} for ${selectedEvents.length} events.`,
+      confirmLabel: 'Confirm & Register',
+      confirmColor: '#CCFF00',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        await executeConfirmSingle();
+      }
+    });
+  };
+
+  const executeConfirmSingle = async () => {
     setSubmitting(true);
     try {
       const { data } = await api.post('/event-registrations', {
@@ -203,7 +232,21 @@ export function Dashboard() {
       toast.error('Please add team members');
       return;
     }
-    if (!window.confirm(`Are you sure you have received ₹${totalAmount}? Dashboard will be reset after success.`)) return;
+    
+    setConfirmModal({
+      isOpen: true,
+      title: 'Confirm Group Registration',
+      message: `Are you sure you have received ₹${totalAmount} for this team of ${groupMembersList.length} members?`,
+      confirmLabel: 'Confirm Team',
+      confirmColor: '#CCFF00',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        await executeConfirmGroup();
+      }
+    });
+  };
+
+  const executeConfirmGroup = async () => {
     setSubmitting(true);
     try {
       const leader = groupMembersList[0];
@@ -248,19 +291,28 @@ export function Dashboard() {
   };
 
   const handleResendFailed = async () => {
-    if (!window.confirm('Are you sure you want to resend emails to all students who haven\'t received them?')) return;
-    setResendingEmails(true);
-    try {
-      const { data } = await api.post('/students/resend-failed');
-      if (data.success) {
-        toast.success(data.message, { duration: 5000 });
-        fetchStudents();
+    setConfirmModal({
+      isOpen: true,
+      title: 'Resend All Failed Emails',
+      message: 'Are you sure you want to resend tokens to ALL students who haven\'t received their email yet? This might take a few moments.',
+      confirmLabel: 'Resend All',
+      confirmColor: '#FF00FF', // Branded Magenta for resend
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        setResendingEmails(true);
+        try {
+          const { data } = await api.post('/students/resend-failed');
+          if (data.success) {
+            toast.success(data.message, { duration: 5000 });
+            fetchStudents();
+          }
+        } catch (error: any) {
+          toast.error(error.response?.data?.error || 'Failed to resend emails');
+        } finally {
+          setResendingEmails(false);
+        }
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to resend emails');
-    } finally {
-      setResendingEmails(false);
-    }
+    });
   };
 
   const handleResendToStudent = async (id: string) => {
@@ -798,6 +850,12 @@ export function Dashboard() {
 
         </div>
       </div>
+
+      <ConfirmModal
+        {...confirmModal}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        loading={submitting || resendingEmails}
+      />
 
       {/* ==== EDIT STUDENT MODAL ==== */}
       <AnimatePresence>
