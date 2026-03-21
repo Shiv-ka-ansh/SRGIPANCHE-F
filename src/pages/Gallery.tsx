@@ -30,7 +30,7 @@ export function Gallery() {
           className="mb-16"
         >
           <h1 className="text-5xl md:text-7xl font-display uppercase tracking-tighter mb-4">
-            <TextReveal text="PANACHE 2K25" />
+            <TextReveal text="PANACHE 2K26" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
               THE AFTERMATH
             </span>

@@ -15,7 +15,7 @@ interface EventModalProps {
     image: string;
     subEvents?: string[];
     rules?: string[];
-    coordinators?: { name: string; phone: string }[];
+    coordinators?: { name: string; phone: string; branch?: string; year?: string }[];
   } | null;
 }
 
@@ -133,7 +133,14 @@ export function EventModal({ isOpen, onClose, event }: EventModalProps) {
                     {event.coordinators ? (
                       event.coordinators.map((coord, index) => (
                         <div key={index} className="bg-[#1a1a1a] p-4 border-2 border-[#333] group hover:border-white transition-colors">
-                          <p className="font-anton text-white uppercase tracking-widest mb-1">{coord.name}</p>
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="font-anton text-white uppercase tracking-widest leading-tight">{coord.name}</p>
+                          </div>
+                          {(coord.branch || coord.year) && (
+                            <p className="text-[10px] font-space text-[#CCFF00] uppercase tracking-tighter mb-2 opacity-80">
+                              {coord.branch} {coord.branch && coord.year && '•'} {coord.year}
+                            </p>
+                          )}
                           <a 
                             href={`tel:${coord.phone}`} 
                             className="flex items-center gap-2 text-xs font-space text-[#888] hover:text-white transition-colors"

@@ -24,7 +24,7 @@ export function Navbar() {
     { name: 'Home', path: '/' },
     { name: 'Events', path: '/events' },
     // { name: 'Schedule', path: '/schedule' },
-    // { name: 'Team', path: '/team' },
+    { name: 'Team', path: '/team' },
     // { name: 'Gallery', path: '/gallery' },
     { name: 'Register', path: '/register' },
   ];
@@ -38,12 +38,10 @@ export function Navbar() {
     >
       <div className="bg-surface/90 backdrop-blur-xl border-2 border-white/10 rounded-none md:rounded-full px-6 py-4 flex items-center justify-between shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
         <Link to="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 bg-primary text-black flex items-center justify-center transform -skew-x-12 group-hover:skew-x-0 transition-transform">
-            <span className="font-display text-2xl leading-none mt-1">P</span>
+          <div className="w-24 h-12 flex items-center justify-center transition-transform group-hover:scale-110">
+            <img src="/logo.png" alt="Panache Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="font-display text-2xl tracking-widest text-white hidden sm:block mt-1">
-            PANACHE<span className="text-primary">2K26</span>
-          </span>
+
         </Link>
 
         {/* Desktop Nav */}

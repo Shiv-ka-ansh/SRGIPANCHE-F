@@ -33,7 +33,7 @@ export function Home() {
               </h2>
               <div className="w-24 h-2 bg-black mb-8" />
               <p className="font-sans font-bold text-xl mb-6 leading-relaxed uppercase tracking-wide">
-                Since its inception, PANACHE has been the crucible where raw talent meets unparalleled opportunity. It's not just a college fest; it's a global phenomenon.
+                Since its inception, PANACHE has been the crucible where raw talent meets unparalleled opportunity. It's not just a college fest, it's a global phenomenon.
               </p>
               <p className="font-sans font-medium text-sm sm:text-lg mb-8 sm:mb-12 leading-relaxed uppercase tracking-wide opacity-80">
                 This year, we prove to the world and Millennials that Gen-Z is out here doing everything. We don't just exist online—we dominate offline. Welcome to a multiverse of talent where creativity knows no bounds.
@@ -41,10 +41,10 @@ export function Home() {
               
               <div className="grid grid-cols-2 gap-6">
                 {[
-                  { label: 'EVENTS', value: '50+' },
-                  { label: 'COLLEGES', value: '12' },
-                  { label: 'FOOTFALL', value: '15k' },
-                  { label: 'PRIZE POOL', value: '5k' },
+                  { label: 'EVENTS', value: '40+' },
+                  { label: 'YEARS LEGACY', value: '12+' },
+                  { label: 'FOOTFALL', value: '15k+' },
+                  { label: 'PRIZE POOL', value: '5k+' },
                 ].map((stat, i) => (
                   <div key={i} className="bg-white p-6 border-4 border-black shadow-[8px_8px_0px_#000] transform hover:-translate-y-2 transition-transform">
                     <div className="text-4xl md:text-5xl font-display text-black mb-2">{stat.value}</div>

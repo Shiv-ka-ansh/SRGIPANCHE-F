@@ -10,8 +10,10 @@ export const EVENT_CATEGORIES: Record<string, {
     subEvents?: string[];
     description?: string;
     rules?: string[];
-    coordinators?: { name: string; phone: string }[];
+    coordinators?: { name: string; phone: string; branch?: string; year?: string }[];
+    bannerImage?: string;
   }[];
+
 }> = {
   general: {
     label: 'General',
@@ -20,7 +22,7 @@ export const EVENT_CATEGORIES: Record<string, {
     events: [
       { 
         name: 'TREASURE SAFARI', 
-        amount: 50, 
+        amount: 70, 
         isTeam: true,
         description: 'Get ready for an adventure filled with mystery, excitement, and teamwork! Treasure Safari is a thrilling treasure hunt where participants race against time to decode clues and reach the final destination.',
         rules: [
@@ -28,16 +30,22 @@ export const EVENT_CATEGORIES: Record<string, {
           'A series of clues and puzzles will be provided at each stage.',
           'Each clue leads to the next checkpoint, testing logic and coordination.',
           'The team that successfully solves all clues and reaches the end first emerges as the winner.'
+        ],
+        bannerImage: '/banners/treasure-safari.png',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
-        name: 'PARICHARCHA', 
+        name: 'THE PERFECT CLICK', 
         amount: 50, 
-        description: 'Paricharcha is an engaging debate competition where participants present their ideas, challenge perspectives, and showcase their speaking skills.',
-        rules: [
-          'Topics will be provided for discussion.',
-          'Focus on clarity, confidence, and logical arguments.',
-          'Judging will be based on content, delivery, and rebuttal.'
+        description: 'Showcase your photography skills in the Perfect Click Event! This exciting competition is all about capturing the perfect shot that tells a story.',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
@@ -48,6 +56,38 @@ export const EVENT_CATEGORIES: Record<string, {
           'Participants will create creative and innovative nail designs.',
           'Focus on creativity, precision, and overall presentation.',
           'Judging will be based on originality, detailing, and aesthetic appeal.'
+        ],
+        bannerImage: '/banners/nail-art.png',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
+        ]
+      },
+      { 
+        name: 'PARICHARCHA', 
+        amount: 50, 
+        description: 'Paricharcha is an engaging debate competition where participants present their ideas, challenge perspectives, and showcase their speaking skills.',
+        rules: [
+          'Topics will be provided for discussion.',
+          'Focus on clarity, confidence, and logical arguments.',
+          'Judging will be based on content, delivery, and rebuttal.'
+        ],
+        bannerImage: '/banners/paricharcha.png',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
+        ]
+      },
+      { 
+        name: 'SELFIE MANIAC', 
+        amount: 50, 
+        description: 'Unleash your inner selfie star in the Selfie Maniac Event! This fun-filled competition is all about confidence, creativity, and capturing your best self in the most unique way possible.',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
@@ -58,16 +98,26 @@ export const EVENT_CATEGORIES: Record<string, {
           'Participants will present their look based on the given theme.',
           'Focus on creativity, confidence, and overall presentation.',
           'Judging will be based on styling, expression, and stage presence.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
         name: 'SANYOG SE', 
-        amount: 25, 
+        amount: 40, 
         description: 'What if luck is all you need to win? Sanyog Se is an exciting luck-based event where every draw brings a new surprise and endless anticipation.',
         rules: [
           'Participants will take part in a random lucky draw.',
           'Each pick unlocks a surprise outcome, making every moment thrilling.',
           'No skills required—just trust your luck and enjoy the ride!'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
@@ -78,6 +128,50 @@ export const EVENT_CATEGORIES: Record<string, {
           'Participants will create unique designs and patterns using sand.',
           'Focus on creativity, detailing, and presentation.',
           'Judging will be based on originality, technique, and overall visual impact.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
+        ]
+      },
+      { 
+        name: 'THE SLOGANEER', 
+        amount: 50, 
+        description: 'Unleash the power of words in Sloganeer, where creativity meets impact! This event challenges participants to craft short, catchy, and meaningful slogans.',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
+        ]
+      },
+      { 
+        name: 'ISTEHAAAR', 
+        amount: 50, 
+        description: 'Turn your ideas into impactful visuals! Istehaaar is a poster-making event where creativity meets expression, allowing participants to convey powerful messages through art.',
+        rules: [
+          'Participants will design posters based on the given theme.',
+          'Focus on creativity, clarity of message, and visual appeal.',
+          'Judging will be based on originality, design, and presentation.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
+        ]
+      },
+      { 
+        name: 'ESPRIT DE CORPS', 
+        amount: 50, 
+        isTeam: true,
+        description: 'Step into the spirit of teamwork with Esprit De Corps, an event that celebrates unity, coordination, and collective strength.',
+        rules: [
+          'This event will test your communication, trust, leadership, and team synergy in exciting and competitive tasks.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
@@ -88,16 +182,11 @@ export const EVENT_CATEGORIES: Record<string, {
           'Participants will solve a crossword puzzle within a given time.',
           'Focus on vocabulary, logical thinking, and speed.',
           'Judging will be based on accuracy and completion time.'
-        ]
-      },
-      { 
-        name: 'ISHTEHAR', 
-        amount: 50, 
-        description: 'Turn your ideas into impactful visuals! Ishtehar is a poster-making event where creativity meets expression, allowing participants to convey powerful messages through art.',
-        rules: [
-          'Participants will design posters based on the given theme.',
-          'Focus on creativity, clarity of message, and visual appeal.',
-          'Judging will be based on originality, design, and presentation.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
@@ -108,16 +197,31 @@ export const EVENT_CATEGORIES: Record<string, {
           'Participants will design and paint creative themes on faces.',
           'Focus on creativity, detailing, and color harmony.',
           'Judging will be based on originality, precision, and overall impact.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
-        name: 'RANGOLI', 
+        name: 'LITERARY', 
         amount: 50, 
-        description: 'Not just colors, it’s a whole vibe! Rangoli is where creativity meets tradition, and the ground becomes your canvas to create something truly eye-catching.',
-        rules: [
-          'Participants will design vibrant rangoli based on the given theme.',
-          'Show your creativity, symmetry, and color game.',
-          'Judging will be based on originality, detailing, and overall impact.'
+        description: 'Showcase your prowess with words in this literature-focused event.',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
+        ]
+      },
+      { 
+        name: 'FINE ARTS', 
+        amount: 50, 
+        description: 'A competition to celebrate mastery over traditional and contemporary fine arts.',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
@@ -128,32 +232,38 @@ export const EVENT_CATEGORIES: Record<string, {
           'Participants will compete in one-on-one arm wrestling matches.',
           'Focus on strength, grip, and strategy.',
           'Winners will advance through knockout rounds to claim victory.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
-        name: 'SELFIE MANIAC', 
+        name: 'RANGOLI', 
         amount: 50, 
-        description: 'Unleash your inner selfie star in the Selfie Maniac Event! This fun-filled competition is all about confidence, creativity, and capturing your best self in the most unique way possible.' 
-      },
-      { 
-        name: 'ESPRIT DE CORPS', 
-        amount: 50, 
-        isTeam: true,
-        description: 'Step into the spirit of teamwork with Esprit De Corps, an event that celebrates unity, coordination, and collective strength.',
+        description: 'Not just colors, it’s a whole vibe! Rangoli is where creativity meets tradition, and the ground becomes your canvas to create something truly eye-catching.',
         rules: [
-          'This event will test your communication, trust, leadership, and team synergy in exciting and competitive tasks.'
+          'Participants will design vibrant rangoli based on the given theme.',
+          'Show your creativity, symmetry, and color game.',
+          'Judging will be based on originality, detailing, and overall impact.'
+        ],
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
         ]
       },
       { 
-        name: 'THE SLOGANEER', 
+        name: 'MEHENDI', 
         amount: 50, 
-        description: 'Unleash the power of words in Sloganeer, where creativity meets impact! This event challenges participants to craft short, catchy, and meaningful slogans.' 
-      },
-      { 
-        name: 'THE PERFECT CLICK', 
-        amount: 50, 
-        description: 'Showcase your photography skills in the Perfect Click Event! This exciting competition is all about capturing the perfect shot that tells a story.' 
-      },
+        description: 'Display your creativity and precision with intricate Mehendi designs.',
+        coordinators: [
+          { name: 'ROHIT SONI (HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '7275030175' },
+          { name: 'USHMA TALREJA (JR.HEAD)', branch: 'BTECH CSDS', year: '2ND', phone: '7355359229' },
+          { name: 'ALOK YADAV', branch: 'BTECH CS CORE', year: '3RD', phone: '7785010642' }
+        ]
+      }
     ]
   },
   technical: {
@@ -161,12 +271,66 @@ export const EVENT_CATEGORIES: Record<string, {
     color: '#00FFFF',
     image: '/assets/events/technical.png',
     events: [
-      { name: 'POSTER PRESENTATION', amount: 50, description: 'Design and present a scientific poster on cutting-edge technical topics.' },
-      { name: 'CIRCUIT JHAMELA', amount: 50, description: 'Debug complex electronic circuits and prove your hardware expertise.' },
-      { name: 'THE MECHANIST', amount: 50, description: 'Assemble and disassemble mechanical components under a ticking clock.' },
-      { name: 'SKY SCRAPPER', amount: 50, description: 'Build the tallest and strongest structure using limited industrial materials.' },
-      { name: 'SOLID HAI BOSS', amount: 100, description: 'A high-level technical quiz testing your knowledge across engineering streams.' },
-      { name: 'ALTITUDE WINNER', amount: 100, description: 'Design a craft that can fly the highest or longest in this aeronautical challenge.' },
+      { 
+        name: 'POSTER PRESENTATION', 
+        amount: 50, 
+        description: 'Design and present a scientific poster on cutting-edge technical topics.',
+        coordinators: [
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
+        ]
+      },
+      { 
+        name: 'CIRCUIT JHAMELA', 
+        amount: 50, 
+        description: 'Debug complex electronic circuits and prove your hardware expertise.',
+        coordinators: [
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
+        ]
+      },
+      { 
+        name: 'THE MECHANIST', 
+        amount: 50, 
+        description: 'Assemble and disassemble mechanical components under a ticking clock.',
+        coordinators: [
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
+        ]
+      },
+      { 
+        name: 'SKY SCRAPPER', 
+        amount: 50, 
+        description: 'Build the tallest and strongest structure using limited industrial materials.',
+        coordinators: [
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
+        ]
+      },
+      { 
+        name: 'SOLID HAI BOSS', 
+        amount: 100, 
+        description: 'A high-level technical quiz testing your knowledge across engineering streams.',
+        coordinators: [
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
+        ]
+      },
+      { 
+        name: 'ALTITUDE WINNER', 
+        amount: 100, 
+        description: 'Design a craft that can fly the highest or longest in this aeronautical challenge.',
+        coordinators: [
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
+        ]
+      },
       { 
         name: 'WAR OF MACHINES', 
         amount: 100,
@@ -178,11 +342,22 @@ export const EVENT_CATEGORIES: Record<string, {
           'Decision of the judges will be final.'
         ],
         coordinators: [
-          { name: 'Rahul Sharma', phone: '+91 9876543210' },
-          { name: 'Priya Singh', phone: '+91 8765432109' }
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
+        ],
+        bannerImage: '/banners/war-of-machines.png'
+      },
+      { 
+        name: 'WORTHY TRASH', 
+        amount: 50, 
+        description: 'Create functional or artistic items from discarded technological waste.',
+        coordinators: [
+          { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
+          { name: 'ANUJ GAUR (JR.HEAD)', branch: 'BTECH CS IOT', year: '3RD', phone: '9598091526' },
+          { name: 'NISHANT KUSHWAHA', branch: 'BTECH AIML', year: '2ND', phone: '9151645739' }
         ]
       },
-      { name: 'WORTHY TRASH', amount: 50, description: 'Create functional or artistic items from discarded technological waste.' },
     ]
   },
   cultural: {
@@ -190,11 +365,42 @@ export const EVENT_CATEGORIES: Record<string, {
     color: '#FF00FF',
     image: '/assets/events/cultural.png',
     events: [
-      { name: 'PERSONA', amount: 100, description: 'A talent hunt to find the most charismatic and versatile personality of Panache.' },
-      { name: 'SUR SPARDHA', amount: 50, description: 'Showcase your vocal talent in this intense solo singing competition.' },
-      { name: 'TANZ & TWIST (Solo)', amount: 150, description: 'Express yourself through the power of solo dance and choreography.' },
       { 
-        name: 'TANZ & TWIST (Group)', 
+        name: 'PERSONA', 
+        amount: 100, 
+        description: 'A talent hunt to find the most charismatic and versatile personality of Panache.',
+        coordinators: [
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
+        ]
+      },
+      { 
+        name: 'SUR SPARDHA', 
+        amount: 50, 
+        description: 'Showcase your vocal talent in this intense solo singing competition.',
+        coordinators: [
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
+        ]
+      },
+      { 
+        name: 'TANZ & TWIST', 
+        amount: 150, 
+        description: 'Express yourself through the power of solo dance and choreography.', 
+        bannerImage: '/banners/tanz-twist-solo.png',
+        coordinators: [
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
+        ]
+      },
+      { 
+        name: 'TANZ & TWIST (GROUP)', 
         amount: 500, 
         isTeam: true,
         isFlat: true,
@@ -206,12 +412,59 @@ export const EVENT_CATEGORIES: Record<string, {
           'Choice of music is open but must be submitted in advance.'
         ],
         coordinators: [
-          { name: 'Ananya Verma', phone: '+91 7654321098' }
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
         ]
       },
-      { name: 'NUKKAD NATAK', amount: 500, isTeam: true, isFlat: true, description: 'Powerful street plays that address social issues with drama and energy.' },
-      { name: 'STAND-UP COMEDY', amount: 50, description: 'Tickle the funny bone and win the crowd over with your wit and humor.' },
-      { name: 'DRAMATICS', amount: 50, isTeam: true, description: 'A stage play competition where teams bring कहानियाँ (stories) to life.' },
+      { 
+        name: 'NUKKAD NATAK', 
+        amount: 500, 
+        isTeam: true, 
+        isFlat: true, 
+        description: 'Powerful street plays that address social issues with drama and energy.',
+        coordinators: [
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
+        ]
+      },
+      { 
+        name: 'STAND-UP COMEDY', 
+        amount: 50, 
+        description: 'Tickle the funny bone and win the crowd over with your wit and humor.',
+        coordinators: [
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
+        ]
+      },
+      { 
+        name: 'DRAMATICS', 
+        amount: 50, 
+        isTeam: true, 
+        description: 'A stage play competition where teams bring कहानियाँ (stories) to life.',
+        coordinators: [
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
+        ]
+      },
+      { 
+        name: 'PANACHE GOT TALENT', 
+        amount: 50, 
+        description: 'Showcase your unique talents to the whole crowd in this ultimate stage performance.',
+        coordinators: [
+          { name: 'RAJ SHARMA (HEAD)', branch: 'BTECH CS IOT', year: 'FINAL', phone: '9935619362' },
+          { name: 'NIMESH RAI (CO.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6392888566' },
+          { name: 'PRAKSHAM KUSHWAHA (JR.HEAD)', branch: 'BTECH AIML', year: '3RD', phone: '9889418043' },
+          { name: 'ABHINENDRA UPAYDHAY', branch: 'BTECH AIML', year: '3RD', phone: '9129220191' }
+        ]
+      },
     ]
   },
   cyber: {
@@ -219,13 +472,9 @@ export const EVENT_CATEGORIES: Record<string, {
     color: '#FF6B00',
     image: '/assets/events/cyber.png',
     events: [
-      { name: 'CODE DEBUGGER', amount: 50, description: 'Find and fix complex bugs in code to prove your programming prowess.' },
-      { name: 'BLIND VIEWER', amount: 50, description: 'A unique challenge where you have to type or code with your screen or eyes off.' },
-      { name: 'BATTLE WITH BYTE', amount: 50, description: 'A fast-paced competitive programming contest for the coding ninjas.' },
-      { name: 'GUESS THE TECH', amount: 50, description: 'Identify tech brands, gadgets, and concepts from cryptic clues and logos.' },
       {
         name: 'ONLINE GAMING',
-        amount: 50,
+        amount: 60,
         isTeam: true,
         subEvents: ['BGMI', 'Free Fire', 'Mini Militia', '8 Ball Pool', 'RC24', 'FIFA/E-Football', 'Tekken 3'],
         description: 'Competitive e-sports tournament featuring the most popular games. Prove your skills in the digital arena.',
@@ -236,9 +485,46 @@ export const EVENT_CATEGORIES: Record<string, {
           'Tournament format will be shared on the day of event.'
         ],
         coordinators: [
-          { name: 'Vikram Aditya', phone: '+91 6543210987' }
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
         ]
       },
+      { 
+        name: 'CODE DEBUGGER', 
+        amount: 50, 
+        description: 'Find and fix complex bugs in code to prove your programming prowess.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      { 
+        name: 'BLIND VIEWER', 
+        amount: 50, 
+        description: 'A unique challenge where you have to type or code with your screen or eyes off.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      { 
+        name: 'BATTLE WITH BYTE', 
+        amount: 50, 
+        description: 'A fast-paced competitive programming contest for the coding ninjas.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      { 
+        name: 'GUESS THE TECH', 
+        amount: 50, 
+        description: 'Identify tech brands, gadgets, and concepts from cryptic clues and logos.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      }
     ]
   }
 };

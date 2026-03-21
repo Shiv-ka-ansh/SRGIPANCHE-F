@@ -5,33 +5,114 @@ import { Linkedin, Twitter, Github } from 'lucide-react';
 export function Team() {
   const teamCategories = [
     {
-      title: "CORE COMMAND",
+      title: "YOUTHVERSE MENTORS",
       color: "primary",
       members: [
-        { name: "ALEX MERCER", role: "FESTIVAL DIRECTOR", image: "https://picsum.photos/seed/alex/400/400" },
-        { name: "SARAH CHEN", role: "HEAD OF OPERATIONS", image: "https://picsum.photos/seed/sarah/400/400" },
-        { name: "MARCUS JOHNSON", role: "TECHNICAL LEAD", image: "https://picsum.photos/seed/marcus/400/400" },
-        { name: "ELENA RODRIGUEZ", role: "CULTURAL HEAD", image: "https://picsum.photos/seed/elena/400/400" }
+        { name: "JEETENDRA MOHAN KHARE", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=JEETENDRA+MOHAN+KHARE&background=random" },
+        { name: "JITENDRA RAI", role: "FACULTY ADVISOR", image: "https://ui-avatars.com/api/?name=JITENDRA+RAI&background=random" },
+        { name: "VK SINGH", role: "FACULTY ADVISOR", image: "https://ui-avatars.com/api/?name=VK+SINGH&background=random" }
       ]
     },
     {
-      title: "TECHNICAL VANGUARD",
+      title: "YOUTHVERSE CORE",
       color: "accent",
       members: [
-        { name: "DAVID KIM", role: "HACKATHON LEAD", image: "https://picsum.photos/seed/david/400/400" },
-        { name: "PRIYA PATEL", role: "CYBERSEC CHIEF", image: "https://picsum.photos/seed/priya/400/400" },
-        { name: "JAMES WILSON", role: "ROBOTICS HEAD", image: "https://picsum.photos/seed/james/400/400" },
-        { name: "ANITA DESAI", role: "AI/ML COORDINATOR", image: "https://picsum.photos/seed/anita/400/400" }
+        { name: "TANISH AGRAWAL", role: "PRESIDENT", image: "https://ui-avatars.com/api/?name=TANISH+AGRAWAL&background=random" },
+        { name: "PIYUSH MALVIYA", role: "VICE PRESIDENT", image: "https://ui-avatars.com/api/?name=PIYUSH+MALVIYA&background=random" }
       ]
     },
     {
-      title: "CREATIVE SYNDICATE",
+      title: "TREASURY NEXUS",
       color: "secondary",
       members: [
-        { name: "LEO CARMICHAEL", role: "DESIGN LEAD", image: "https://picsum.photos/seed/leo/400/400" },
-        { name: "MAYA LIN", role: "MEDIA & PR", image: "https://picsum.photos/seed/maya/400/400" },
-        { name: "SAMUEL OAK", role: "STAGE MANAGER", image: "https://picsum.photos/seed/samuel/400/400" },
-        { name: "CHLOE ZHANG", role: "CONTENT CHIEF", image: "https://picsum.photos/seed/chloe/400/400" }
+        { name: "SHIVANSH GUPTA", role: "HEAD", image: "https://ui-avatars.com/api/?name=SHIVANSH+GUPTA&background=random" },
+        { name: "SAKSHAM OJHA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=SAKSHAM+OJHA&background=random" },
+        { name: "RAHUL KUMAR SHRIVAS", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=RAHUL+KUMAR+SHRIVAS&background=random" }
+      ]
+    },
+    {
+      title: "NEURAL ARCHITECTS",
+      color: "primary",
+      members: [
+        { name: "VARUN PIRONIYA", role: "HEAD", image: "https://ui-avatars.com/api/?name=VARUN+PIRONIYA&background=random" },
+        { name: "KRISH KUMAR AHIRWAR", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=KRISH+KUMAR+AHIRWAR&background=random" }
+      ]
+    },
+    {
+      title: "TECH INNOVATORS",
+      color: "accent",
+      members: [
+        { name: "AKASH RAYKWAR", role: "HEAD", image: "https://ui-avatars.com/api/?name=AKASH+RAYKWAR&background=random" },
+        { name: "ANUJ GAUR", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=ANUJ+GAUR&background=random" },
+        { name: "NISHANT KUSHWAHA", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=NISHANT+KUSHWAHA&background=random" }
+      ]
+    },
+    {
+      title: "CYBER SYNDICATE",
+      color: "secondary",
+      members: [
+        { name: "RASHID KHAN", role: "HEAD", image: "https://ui-avatars.com/api/?name=RASHID+KHAN&background=random" },
+        { name: "ABHISHEK JATAV", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=ABHISHEK+JATAV&background=random" }
+      ]
+    },
+    {
+      title: "TREASURY COMMAND",
+      color: "primary",
+      members: [
+        { name: "SEJAL AGARWAL", role: "HEAD", image: "https://ui-avatars.com/api/?name=SEJAL+AGARWAL&background=random" },
+        { name: "JAGRAT BHATT", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=JAGRAT+BHATT&background=random" }
+      ]
+    },
+    {
+      title: "GUEST DIMENSION",
+      color: "accent",
+      members: [
+        { name: "KHUSHI CHATURVEDI", role: "HEAD", image: "https://ui-avatars.com/api/?name=KHUSHI+CHATURVEDI&background=random" },
+        { name: "AYUSHI GUPTA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=AYUSHI+GUPTA&background=random" }
+      ]
+    },
+    {
+      title: "ASTRAL ARTS",
+      color: "secondary",
+      members: [
+        { name: "RAJ SHARMA", role: "HEAD", image: "https://ui-avatars.com/api/?name=RAJ+SHARMA&background=random" },
+        { name: "NIMESH RAI", role: "CO.HEAD", image: "https://ui-avatars.com/api/?name=NIMESH+RAI&background=random" },
+        { name: "PRAKSHAM KUSHWAHA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=PRAKSHAM+KUSHWAHA&background=random" },
+        { name: "ABHINENDRA UPAYDHAY", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=ABHINENDRA+UPAYDHAY&background=random" }
+      ]
+    },
+    {
+      title: "EVENT COSMOS",
+      color: "primary",
+      members: [
+        { name: "ROHIT SONI", role: "HEAD", image: "https://ui-avatars.com/api/?name=ROHIT+SONI&background=random" },
+        { name: "USHMA TALREJA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=USHMA+TALREJA&background=random" },
+        { name: "ALOK YADAV", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=ALOK+YADAV&background=random" }
+      ]
+    },
+    {
+      title: "IMAGINATION REALM",
+      color: "accent",
+      members: [
+        { name: "MANISHI NIGAM", role: "HEAD", image: "https://ui-avatars.com/api/?name=MANISHI+NIGAM&background=random" },
+        { name: "NANDINI SAHU", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=NANDINI+SAHU&background=random" },
+        { name: "RAKHI NAMDEV", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=RAKHI+NAMDEV&background=random" }
+      ]
+    },
+    {
+      title: "DATA SYNTHESIZERS",
+      color: "secondary",
+      members: [
+        { name: "SWEETY RAIKWAR", role: "HEAD", image: "https://ui-avatars.com/api/?name=SWEETY+RAIKWAR&background=random" },
+        { name: "SHRADHA PARYA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=SHRADHA+PARYA&background=random" }
+      ]
+    },
+    {
+      title: "DIGITAL GALAXY",
+      color: "primary",
+      members: [
+        { name: "JAHNAVI PANDEY", role: "HEAD", image: "https://ui-avatars.com/api/?name=JAHNAVI+PANDEY&background=random" },
+        { name: "ISHITA BAJPAYEE", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=ISHITA+BAJPAYEE&background=random" }
       ]
     }
   ];
@@ -75,9 +156,10 @@ export function Team() {
                   <div className={`h-1 flex-grow bg-${category.color} opacity-20`} />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="flex flex-wrap justify-center gap-8">
                   {category.members.map((member, memberIndex) => (
-                    <div key={memberIndex} className={`card-brutal group relative overflow-hidden border-4 border-border hover:border-${category.color} hover:shadow-[8px_8px_0px_var(--color-${category.color})] transition-all`}>
+                    <div key={memberIndex} className={`w-full sm:w-72 lg:w-80 flex-none card-brutal group relative overflow-hidden border-4 border-border hover:border-${category.color} hover:shadow-[8px_8px_0px_var(--color-${category.color})] transition-all`}>
+
                       <div className={`absolute inset-0 bg-${category.color} translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-0`} />
                       
                       <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">

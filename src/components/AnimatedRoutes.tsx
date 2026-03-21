@@ -11,6 +11,8 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { Login as AdminLogin } from '../pages/admin/Login';
 import { Dashboard as AdminDashboard } from '../pages/admin/Dashboard';
 import { Dashboard as SuperAdminDashboard } from '../pages/superadmin/Dashboard';
+import { BannerStudio } from '@/src/pages/BannerStudio';
+
 
 export function AnimatedRoutes() {
   const location = useLocation();
@@ -26,6 +28,8 @@ export function AnimatedRoutes() {
           <Route path="/team" element={<PageTransition><Team /></PageTransition>} />
           <Route path="/gallery" element={<PageTransition><Gallery /></PageTransition>} />
           <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+          <Route path="/banner-studio" element={<PageTransition><BannerStudio /></PageTransition>} />
+
 
           {/* Auth Routes */}
           <Route path="/admin/login" element={<PageTransition><AdminLogin /></PageTransition>} />

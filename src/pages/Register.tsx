@@ -253,7 +253,6 @@ export function Register() {
                   <option value="2nd">2nd Year</option>
                   <option value="3rd">3rd Year</option>
                   <option value="4th">4th Year</option>
-                  <option value="5th">5th Year</option>
                 </select>
               </div>
               <div>
