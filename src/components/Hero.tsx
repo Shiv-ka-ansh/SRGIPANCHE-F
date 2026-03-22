@@ -84,11 +84,11 @@ export function Hero() {
               className="mb-8 border-2 border-white/20 px-4 py-3 flex flex-wrap items-center gap-3 sm:gap-4 font-sans font-bold uppercase tracking-widest text-xs sm:text-sm bg-surface/50 backdrop-blur-sm"
             >
               <span className="flex items-center gap-2 text-primary"><Calendar size={14} className="sm:w-4 sm:h-4" /> 
-              MARCH 28-31
+              MARCH 28-04
               </span>
               <span className="w-1.5 h-1.5 bg-white rounded-full" />
               <span className="flex items-center gap-2 text-secondary"><MapPin size={16} /> 
-              SRGI COLLEGE CAMPUS
+              SRGI CAMPUS
               </span>
             </motion.div>
 

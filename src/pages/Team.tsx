@@ -27,7 +27,7 @@ export function Team() {
       members: [
         { name: "SHIVANSH GUPTA", role: "HEAD", image: "https://ui-avatars.com/api/?name=SHIVANSH+GUPTA&background=random" },
         { name: "SAKSHAM OJHA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=SAKSHAM+OJHA&background=random" },
-        { name: "RAHUL KUMAR SHRIVAS", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=RAHUL+KUMAR+SHRIVAS&background=random" }
+        
       ]
     },
     {
@@ -44,7 +44,6 @@ export function Team() {
       members: [
         { name: "AKASH RAYKWAR", role: "HEAD", image: "https://ui-avatars.com/api/?name=AKASH+RAYKWAR&background=random" },
         { name: "ANUJ GAUR", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=ANUJ+GAUR&background=random" },
-        { name: "NISHANT KUSHWAHA", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=NISHANT+KUSHWAHA&background=random" }
       ]
     },
     {
@@ -78,7 +77,6 @@ export function Team() {
         { name: "RAJ SHARMA", role: "HEAD", image: "https://ui-avatars.com/api/?name=RAJ+SHARMA&background=random" },
         { name: "NIMESH RAI", role: "CO.HEAD", image: "https://ui-avatars.com/api/?name=NIMESH+RAI&background=random" },
         { name: "PRAKSHAM KUSHWAHA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=PRAKSHAM+KUSHWAHA&background=random" },
-        { name: "ABHINENDRA UPAYDHAY", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=ABHINENDRA+UPAYDHAY&background=random" }
       ]
     },
     {
@@ -87,7 +85,7 @@ export function Team() {
       members: [
         { name: "ROHIT SONI", role: "HEAD", image: "https://ui-avatars.com/api/?name=ROHIT+SONI&background=random" },
         { name: "USHMA TALREJA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=USHMA+TALREJA&background=random" },
-        { name: "ALOK YADAV", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=ALOK+YADAV&background=random" }
+        
       ]
     },
     {
@@ -96,7 +94,7 @@ export function Team() {
       members: [
         { name: "MANISHI NIGAM", role: "HEAD", image: "https://ui-avatars.com/api/?name=MANISHI+NIGAM&background=random" },
         { name: "NANDINI SAHU", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=NANDINI+SAHU&background=random" },
-        { name: "RAKHI NAMDEV", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=RAKHI+NAMDEV&background=random" }
+        
       ]
     },
     {

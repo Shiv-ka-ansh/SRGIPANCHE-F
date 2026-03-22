@@ -18,14 +18,13 @@ export function Footer() {
               to="/"
               className="flex items-center gap-2 mb-6 group inline-flex"
             >
-              <div className="w-12 h-12 bg-primary text-black flex items-center justify-center transform -skew-x-12 group-hover:skew-x-0 transition-transform">
-                <span className="font-display text-3xl leading-none mt-1">
-                  P
-                </span>
+              <div className="w-12 h-12 text-black flex items-center justify-center transform -skew-x-12 group-hover:skew-x-0 transition-transform">
               </div>
-              <span className="font-display text-4xl tracking-widest text-white mt-1">
-                PANACHE<span className="text-primary">2K26</span>
-              </span>
+              <img
+                src="/logo.png"
+                alt="Panache Logo"
+                className="w-30 h-24 object-contain"
+              />
             </Link>
             <p className="text-text-muted max-w-md mb-8 font-sans text-lg">
               The ultimate collision of technology, culture, and raw energy.

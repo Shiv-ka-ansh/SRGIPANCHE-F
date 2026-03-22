@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout } from '../components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
-import { UserPlus, Loader2, CheckCircle2, Copy, Check, X } from 'lucide-react';
+import { UserPlus, Loader2, CheckCircle2, Copy, Check, X, Ticket, QrCode, CreditCard, FileText, List } from 'lucide-react';
 import api from '../lib/api';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -84,7 +84,7 @@ export function Register() {
             <p className="font-space text-[#aaa] mb-8 uppercase text-sm font-bold">Save this token — you'll need it at the venue</p>
 
             <div className="bg-[#050505] border-4 border-[#CCFF00] p-8 mb-8" style={{ boxShadow: '8px 8px 0px #CCFF00' }}>
-              <p className="font-space text-[#aaa] text-xs uppercase tracking-widest mb-2">Your Token</p>
+              <p className="font-space text-[#aaa] text-xs uppercase tracking-widest mb-2">Your Registration Token</p>
               <div className="font-anton text-6xl text-[#CCFF00] tracking-[0.3em] mb-4">{token}</div>
               <button
                 onClick={copyToken}
@@ -95,8 +95,29 @@ export function Register() {
               </button>
             </div>
 
-            <p className="font-space text-[#666] text-xs uppercase">
-              A confirmation email has been sent to <span className="text-white">{formData.email}</span>
+            {/* Next Steps Checklist */}
+            <div className="text-left bg-[#050505] border-2 border-[#333] p-6 mb-8">
+              <h3 className="font-anton text-xl text-[#CCFF00] mb-4 uppercase tracking-wider">What's Next?</h3>
+              <ul className="space-y-4">
+                {[
+                  "Take a screenshot or copy this token.",
+                  "Visit the PANACHE Control Room at SRGI Campus.",
+                  "Show this token to the desk coordinator.",
+                  "Select your events & collect your INVOICE."
+                ].map((step, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-5 h-5 border-2 border-[#CCFF00] flex items-center justify-center shrink-0 mt-0.5">
+                      <Check size={12} className="text-[#CCFF00]" />
+                    </div>
+                    <span className="font-space text-xs text-white uppercase font-bold">{step}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <p className="font-space text-[#666] text-xs uppercase leading-relaxed">
+              A confirmation email has been sent to <br/>
+              <span className="text-white border-b border-[#CCFF00]">{formData.email}</span>
             </p>
           </motion.div>
         </div>
@@ -127,10 +148,34 @@ export function Register() {
             </motion.p>
           </div>
 
+          {/* How it Works Guide */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+            {[
+              { icon: <UserPlus size={20} />, title: "REGISTER", desc: "Fill your details & get token" },
+              { icon: <QrCode size={20} />, title: "VERIFY", desc: "Visit Control Room desk" },
+              { icon: <List size={20} />, title: "SELECT", desc: "Choose your events" },
+              { icon: <FileText size={20} />, title: "INVOICE", desc: "Pay & collect receipt" },
+            ].map((step, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * i }}
+                className="bg-[#121212] border-2 border-[#333] p-4 text-center group hover:border-[#CCFF00] transition-colors"
+              >
+                <div className="w-10 h-10 bg-[#333] group-hover:bg-[#CCFF00] text-white group-hover:text-[#050505] flex items-center justify-center mx-auto mb-3 transform -skew-x-12 transition-colors">
+                  {step.icon}
+                </div>
+                <h3 className="font-anton text-sm text-[#CCFF00] mb-1 tracking-wider uppercase">{step.title}</h3>
+                <p className="font-space text-[10px] text-[#666] leading-tight uppercase font-bold">{step.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
           <motion.form
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.4 }}
             onSubmit={handleSubmit}
             className="bg-[#121212] border-4 border-[#333] p-8 md:p-12 space-y-6"
             style={{ boxShadow: "12px 12px 0px #333" }}
