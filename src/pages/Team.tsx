@@ -8,111 +8,220 @@ export function Team() {
       title: "YOUTHVERSE MENTORS",
       color: "primary",
       members: [
-        { name: "JEETENDRA MOHAN KHARE", role: "COORDINATOR", image: "https://ui-avatars.com/api/?name=JEETENDRA+MOHAN+KHARE&background=random" },
-        { name: "JITENDRA RAI", role: "FACULTY ADVISOR", image: "https://ui-avatars.com/api/?name=JITENDRA+RAI&background=random" },
-        { name: "VK SINGH", role: "FACULTY ADVISOR", image: "https://ui-avatars.com/api/?name=VK+SINGH&background=random" }
-      ]
+        {
+          name: "JEETENDRA MOHAN KHARE",
+          role: "COORDINATOR",
+          image: "/team/mentors/jeetendra-mohan-khare.png",
+        },
+        {
+          name: "JITENDRA RAI",
+          role: "FACULTY ADVISOR",
+          image: "/team/mentors/jitendra-rai.png",
+        },
+        {
+          name: "VK SINGH",
+          role: "FACULTY ADVISOR",
+          image: "/team/mentors/vk-singh.png",
+        },
+      ],
     },
     {
       title: "YOUTHVERSE CORE",
       color: "accent",
       members: [
-        { name: "TANISH AGRAWAL", role: "PRESIDENT", image: "https://ui-avatars.com/api/?name=TANISH+AGRAWAL&background=random" },
-        { name: "PIYUSH MALVIYA", role: "VICE PRESIDENT", image: "https://ui-avatars.com/api/?name=PIYUSH+MALVIYA&background=random" }
-      ]
+        {
+          name: "TANISH AGRAWAL",
+          role: "PRESIDENT",
+          image: "/team/core/tanish-agrawal.png",
+        },
+        {
+          name: "PIYUSH MALVIYA",
+          role: "VICE PRESIDENT",
+          image: "/team/core/piyush-malviya.png",
+        },
+      ],
     },
     {
       title: "TREASURY NEXUS",
       color: "secondary",
       members: [
-        { name: "SHIVANSH GUPTA", role: "HEAD", image: "https://ui-avatars.com/api/?name=SHIVANSH+GUPTA&background=random" },
-        { name: "SAKSHAM OJHA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=SAKSHAM+OJHA&background=random" },
-        
-      ]
+        {
+          name: "SHIVANSH GUPTA",
+          role: "HEAD",
+          image: "/team/FINANCIAL HEAD/shivansh.jpg",
+        },
+        {
+          name: "SAKSHAM OJHA",
+          role: "JR.HEAD",
+          image: "/team/FINANCIAL JR.HEAD/IMG_20250803_171901819.jpg",
+        },
+      ],
     },
     {
       title: "NEURAL ARCHITECTS",
       color: "primary",
       members: [
-        { name: "VARUN PIRONIYA", role: "HEAD", image: "https://ui-avatars.com/api/?name=VARUN+PIRONIYA&background=random" },
-        { name: "KRISH KUMAR AHIRWAR", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=KRISH+KUMAR+AHIRWAR&background=random" }
-      ]
-    },
-    {
-      title: "TECH INNOVATORS",
-      color: "accent",
-      members: [
-        { name: "AKASH RAYKWAR", role: "HEAD", image: "https://ui-avatars.com/api/?name=AKASH+RAYKWAR&background=random" },
-        { name: "ANUJ GAUR", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=ANUJ+GAUR&background=random" },
-      ]
-    },
-    {
-      title: "CYBER SYNDICATE",
-      color: "secondary",
-      members: [
-        { name: "RASHID KHAN", role: "HEAD", image: "https://ui-avatars.com/api/?name=RASHID+KHAN&background=random" },
-        { name: "ABHISHEK JATAV", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=ABHISHEK+JATAV&background=random" }
-      ]
-    },
-    {
-      title: "TREASURY COMMAND",
-      color: "primary",
-      members: [
-        { name: "SEJAL AGARWAL", role: "HEAD", image: "https://ui-avatars.com/api/?name=SEJAL+AGARWAL&background=random" },
-        { name: "JAGRAT BHATT", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=JAGRAT+BHATT&background=random" }
-      ]
-    },
-    {
-      title: "GUEST DIMENSION",
-      color: "accent",
-      members: [
-        { name: "KHUSHI CHATURVEDI", role: "HEAD", image: "https://ui-avatars.com/api/?name=KHUSHI+CHATURVEDI&background=random" },
-        { name: "AYUSHI GUPTA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=AYUSHI+GUPTA&background=random" }
-      ]
-    },
-    {
-      title: "ASTRAL ARTS",
-      color: "secondary",
-      members: [
-        { name: "RAJ SHARMA", role: "HEAD", image: "https://ui-avatars.com/api/?name=RAJ+SHARMA&background=random" },
-        { name: "NIMESH RAI", role: "CO.HEAD", image: "https://ui-avatars.com/api/?name=NIMESH+RAI&background=random" },
-        { name: "PRAKSHAM KUSHWAHA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=PRAKSHAM+KUSHWAHA&background=random" },
-      ]
-    },
-    {
-      title: "EVENT COSMOS",
-      color: "primary",
-      members: [
-        { name: "ROHIT SONI", role: "HEAD", image: "https://ui-avatars.com/api/?name=ROHIT+SONI&background=random" },
-        { name: "USHMA TALREJA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=USHMA+TALREJA&background=random" },
-        
-      ]
+        {
+          name: "VARUN PIRONIYA",
+          role: "HEAD",
+          image: "/team/TECHNICAL HEAD/IMG_20260102_223401_030.jpg",
+        },
+        {
+          name: "KRISH KUMAR AHIRWAR",
+          role: "JR.HEAD",
+          image: "/team/TECHNICAL JR.HEAD/krish.jpeg",
+        },
+      ],
     },
     {
       title: "IMAGINATION REALM",
       color: "accent",
       members: [
-        { name: "MANISHI NIGAM", role: "HEAD", image: "https://ui-avatars.com/api/?name=MANISHI+NIGAM&background=random" },
-        { name: "NANDINI SAHU", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=NANDINI+SAHU&background=random" },
-        
-      ]
+        {
+          name: "MANISHI NIGAM",
+          role: "HEAD",
+          image: "/team/CREATIVITY HEAD/IMG-20251208-WA0043(1).jpg",
+        },
+        {
+          name: "NANDINI SAHU",
+          role: "JR.HEAD",
+          image: "/team/CREATIVITY JR.HEAD/IMG_20250502_185106.jpg",
+        },
+      ],
+    },
+    {
+      title: "TREASURY COMMAND",
+      color: "primary",
+      members: [
+        {
+          name: "SEJAL AGARWAL",
+          role: "HEAD",
+          image: "/team/PROMOTIONAL HEAD/IMG-20260321-WA0003.jpg",
+        },
+        {
+          name: "JAGRAT BHATT",
+          role: "JR.HEAD",
+          image: "/team/PROMOTIONAL JR.HEAD/IMG_20260122_124048.jpg",
+        },
+      ],
+    },
+    {
+      title: "CULTURAL EVENT",
+      color: "secondary",
+      members: [
+        {
+          name: "RAJ SHARMA",
+          role: "HEAD",
+          image: "/team/CULTURAL EVENT HEAD/IMG_20260321_181235.jpg",
+        },
+        {
+          name: "NIMESH RAI",
+          role: "CO.HEAD",
+          image: "/team/CULTURAL EVENT CO.HEAD/IMG-20260305-WA0015.jpg",
+        },
+        {
+          name: "PRAKSHAM KUSHWAHA",
+          role: "JR.HEAD",
+          image: "/team/CULTURAL EVENT JR.HEAD/Screenshot_2025-09-20-07-11-42-815_com.lemon.lvoverseas-edit.jpg",
+        },
+      ],
+    },
+    {
+      title: "GENERAL EVENT",
+      color: "primary",
+      members: [
+        {
+          name: "ROHIT SONI",
+          role: "HEAD",
+          image: "/team/GENERAL EVENT HEAD/IMG_20260215_185330_739~2.jpg",
+        },
+        {
+          name: "USHMA TALREJA",
+          role: "JR.HEAD",
+          image: "/team/GENERAL EVENT JR.HEAD/IMG_20260321_173407.jpg",
+        },
+      ],
+    },
+    {
+      title: "CYBER EVENT",
+      color: "secondary",
+      members: [
+        {
+          name: "RASHID KHAN",
+          role: "HEAD",
+          image: "/team/CYBER EVENT HEAD/IMG_4157.jpeg",
+        },
+        {
+          name: "ABHISHEK JATAV",
+          role: "JR.HEAD",
+          image: "/team/CYBER EVENT JR.HEAD/IMG-20260321-WA0885.jpg",
+        },
+      ],
+    },
+    {
+      title: "TECHNICAL EVENT",
+      color: "accent",
+      members: [
+        {
+          name: "AKASH RAYKWAR",
+          role: "HEAD",
+          image: "/team/TECHNICAL EVENT HEAD/AKASH RAYKWAR ELECTRICAL ENGINEER 3RD YEAR.jpg",
+        },
+        {
+          name: "ANUJ GAUR",
+          role: "JR.HEAD",
+          image: "/team/TECHNICAL EVENT JR.HEAD/Anuj Gaur (technical event).jpg",
+        },
+      ],
+    },
+    {
+      title: "GUEST DIMENSION",
+      color: "accent",
+      members: [
+        {
+          name: "KHUSHI CHATURVEDI",
+          role: "HEAD",
+          image: "/team/HOSPITALITY HEAD/IMG_1810.JPG",
+        },
+        {
+          name: "AYUSHI GUPTA",
+          role: "JR.HEAD",
+          image: "/team/HOSPITALITY JR.HEAD/SAVE_20260321_173122.jpg",
+        },
+      ],
     },
     {
       title: "DATA SYNTHESIZERS",
       color: "secondary",
       members: [
-        { name: "SWEETY RAIKWAR", role: "HEAD", image: "https://ui-avatars.com/api/?name=SWEETY+RAIKWAR&background=random" },
-        { name: "SHRADHA PARYA", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=SHRADHA+PARYA&background=random" }
-      ]
+        {
+          name: "SWEETY RAIKWAR",
+          role: "HEAD",
+          image: "/team/RESULT COMPILATION HEAD/IMG_20260321_174548.jpg",
+        },
+        {
+          name: "SHRADHA PARYA",
+          role: "JR.HEAD",
+          image: "/team/RESULT COMPILATION JR.HEAD/_storage_emulated_0_WhatsApp_Media_WhatsApp Documents_Snapchat-1940705106.jpg",
+        },
+      ],
     },
     {
       title: "DIGITAL GALAXY",
       color: "primary",
       members: [
-        { name: "JAHNAVI PANDEY", role: "HEAD", image: "https://ui-avatars.com/api/?name=JAHNAVI+PANDEY&background=random" },
-        { name: "ISHITA BAJPAYEE", role: "JR.HEAD", image: "https://ui-avatars.com/api/?name=ISHITA+BAJPAYEE&background=random" }
-      ]
-    }
+        {
+          name: "JAHNAVI PANDEY",
+          role: "HEAD",
+          image: "/team/SOCIAL MEDIA HEAD/Snapchat-1028698020(1).jpg",
+        },
+        {
+          name: "ISHITA BAJPAYEE",
+          role: "JR.HEAD",
+          image: "/team/SOCIAL MEDIA JR.HEAD/Snapchat-1239257296.jpg",
+        },
+      ],
+    },
   ];
 
   return (
@@ -165,7 +274,7 @@ export function Team() {
                           <img 
                             src={member.image} 
                             alt={member.name} 
-                            className="w-full h-full object-cover md:grayscale group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-100"
+                            className="w-full h-full object-cover group-hover:grayscale-0 transition-all duration-500 scale-110 group-hover:scale-100"
                           />
                         </div>
                         
@@ -176,17 +285,14 @@ export function Team() {
                           {member.role}
                         </p>
                         
-                        <div className="flex gap-3 mt-auto">
+                        {/* <div className="flex gap-3 mt-auto">
                           <a href="#" className="w-10 h-10 border-2 border-border group-hover:border-black/20 flex items-center justify-center text-text-muted group-hover:text-black hover:bg-black hover:!text-white transition-all">
                             <Linkedin size={16} />
                           </a>
                           <a href="#" className="w-10 h-10 border-2 border-border group-hover:border-black/20 flex items-center justify-center text-text-muted group-hover:text-black hover:bg-black hover:!text-white transition-all">
-                            <Twitter size={16} />
-                          </a>
-                          <a href="#" className="w-10 h-10 border-2 border-border group-hover:border-black/20 flex items-center justify-center text-text-muted group-hover:text-black hover:bg-black hover:!text-white transition-all">
                             <Github size={16} />
                           </a>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   ))}

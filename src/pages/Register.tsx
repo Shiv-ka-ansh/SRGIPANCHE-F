@@ -70,25 +70,40 @@ export function Register() {
     return (
       <Layout>
         <Toaster position="top-right" />
-        <div className="pt-24 pb-32 min-h-screen bg-[#050505] flex items-center justify-center px-4">
+        <div className="pt-24 pb-32 min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4 md:px-0">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#121212] border-4 border-[#CCFF00] p-8 md:p-12 max-w-lg w-full text-center"
-            style={{ boxShadow: '16px 16px 0px #CCFF00' }}
+            className="bg-[#121212] border-4 border-[#CCFF00] p-6 md:p-10 max-w-[480px] w-full text-center relative"
+            style={{ 
+              boxShadow: '0 0 20px rgba(204, 255, 0, 0.2)',
+            }}
           >
-            <div className="bg-[#CCFF00] w-20 h-20 flex items-center justify-center mx-auto mb-8 border-4 border-[#050505]">
-              <CheckCircle2 size={48} color="#050505" />
+            {/* Visual offset border for cyberpunk feel */}
+            <div className="absolute -right-2 -bottom-2 w-full h-full border-4 border-[#CCFF00] -z-10 bg-[#CCFF00]/10" />
+            
+            <div className="bg-[#CCFF00] w-16 h-16 md:w-20 md:h-20 flex items-center justify-center mx-auto mb-6 border-4 border-[#050505] shadow-[0_0_15px_#CCFF00]">
+              <CheckCircle2 size={40} className="md:w-12 md:h-12" color="#050505" />
             </div>
-            <h1 className="font-anton text-4xl text-[#CCFF00] mb-2 uppercase tracking-wider">Registration Complete!</h1>
-            <p className="font-space text-[#aaa] mb-8 uppercase text-sm font-bold">Save this token — you'll need it at the venue</p>
+            
+            <h1 className="font-display text-3xl md:text-5xl text-[#CCFF00] mb-2 uppercase tracking-wider leading-tight">
+              Registration Complete!
+            </h1>
+            <p className="font-space text-[#aaa] mb-8 uppercase text-[10px] md:text-xs font-bold tracking-widest px-2">
+              Save this token — you'll need it at the venue
+            </p>
 
-            <div className="bg-[#050505] border-4 border-[#CCFF00] p-8 mb-8" style={{ boxShadow: '8px 8px 0px #CCFF00' }}>
-              <p className="font-space text-[#aaa] text-xs uppercase tracking-widest mb-2">Your Registration Token</p>
-              <div className="font-anton text-6xl text-[#CCFF00] tracking-[0.3em] mb-4">{token}</div>
+            {/* Token Box */}
+            <div className="bg-[#050505] border-4 border-[#CCFF00] p-6 md:p-8 mb-8 relative overflow-hidden group shadow-[inset_0_0_10px_rgba(204,255,0,0.1)] hover:shadow-[0_0_20px_rgba(204,255,0,0.15)] transition-shadow">
+              <p className="font-space text-[#aaa] text-[10px] uppercase tracking-[0.2em] mb-4">Your Registration Token</p>
+              
+              <div className="font-anton text-5xl md:text-6xl text-[#CCFF00] tracking-[0.2em] mb-6 flex justify-center items-center overflow-hidden">
+                <span className="whitespace-nowrap">{token}</span>
+              </div>
+              
               <button
                 onClick={copyToken}
-                className="bg-[#CCFF00] text-[#050505] font-space font-bold uppercase text-sm px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] transition-colors flex items-center gap-2 mx-auto"
+                className="w-full bg-[#CCFF00] text-[#050505] font-space font-bold uppercase text-sm py-4 rounded-[8px] border-2 border-transparent hover:bg-[#d4ff33] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 {copied ? <Check size={18} /> : <Copy size={18} />}
                 {copied ? 'Copied!' : 'Copy Token'}
@@ -96,8 +111,10 @@ export function Register() {
             </div>
 
             {/* Next Steps Checklist */}
-            <div className="text-left bg-[#050505] border-2 border-[#333] p-6 mb-8">
-              <h3 className="font-anton text-xl text-[#CCFF00] mb-4 uppercase tracking-wider">What's Next?</h3>
+            <div className="text-left bg-[#050505]/50 border-2 border-[#333] p-5 md:p-6 mb-8 group hover:border-[#CCFF00]/30 transition-colors">
+              <h3 className="font-display text-xl text-[#CCFF00] mb-5 uppercase tracking-wider border-b border-[#333] pb-2 inline-block">
+                What's Next?
+              </h3>
               <ul className="space-y-4">
                 {[
                   "Take a screenshot or copy this token.",
@@ -105,19 +122,21 @@ export function Register() {
                   "Show this token to the desk coordinator.",
                   "Select your events & collect your INVOICE."
                 ].map((step, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="w-5 h-5 border-2 border-[#CCFF00] flex items-center justify-center shrink-0 mt-0.5">
-                      <Check size={12} className="text-[#CCFF00]" />
+                  <li key={i} className="flex items-center gap-4 group/item">
+                    <div className="w-[22px] h-[22px] border-2 border-[#CCFF00] flex items-center justify-center shrink-0 rounded-sm bg-[#CCFF00]/5 group-hover/item:bg-[#CCFF00]/20 transition-colors">
+                      <Check size={14} className="text-[#CCFF00] stroke-[3]" />
                     </div>
-                    <span className="font-space text-xs text-white uppercase font-bold">{step}</span>
+                    <span className="font-space text-[11px] md:text-xs text-white uppercase font-bold leading-tight flex-1">
+                      {step}
+                    </span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <p className="font-space text-[#666] text-xs uppercase leading-relaxed">
+            <p className="font-space text-[#666] text-[10px] uppercase leading-relaxed px-4">
               A confirmation email has been sent to <br/>
-              <span className="text-white border-b border-[#CCFF00]">{formData.email}</span>
+              <span className="text-white border-b border-[#CCFF00] break-all">{formData.email}</span>
             </p>
           </motion.div>
         </div>
@@ -149,25 +168,25 @@ export function Register() {
           </div>
 
           {/* How it Works Guide */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+          <div className="grid grid-cols-4 gap-2 md:gap-4 mb-12">
             {[
-              { icon: <UserPlus size={20} />, title: "REGISTER", desc: "Fill your details & get token" },
-              { icon: <QrCode size={20} />, title: "VERIFY", desc: "Visit Control Room desk" },
-              { icon: <List size={20} />, title: "SELECT", desc: "Choose your events" },
-              { icon: <FileText size={20} />, title: "INVOICE", desc: "Pay & collect receipt" },
+              { icon: UserPlus, title: "REGISTER", desc: "Get token" },
+              { icon: QrCode, title: "VERIFY", desc: "Visit Desk" },
+              { icon: List, title: "SELECT", desc: "Events list" },
+              { icon: FileText, title: "INVOICE", desc: "Pay fee" },
             ].map((step, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * i }}
-                className="bg-[#121212] border-2 border-[#333] p-4 text-center group hover:border-[#CCFF00] transition-colors"
+                className="bg-[#121212] border border-[#333] md:border-2 p-2 md:p-4 text-center group hover:border-[#CCFF00] transition-colors"
               >
-                <div className="w-10 h-10 bg-[#333] group-hover:bg-[#CCFF00] text-white group-hover:text-[#050505] flex items-center justify-center mx-auto mb-3 transform -skew-x-12 transition-colors">
-                  {step.icon}
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-[#333] group-hover:bg-[#CCFF00] text-white group-hover:text-[#050505] flex items-center justify-center mx-auto mb-2 md:mb-3 transform -skew-x-12 transition-colors">
+                  <step.icon className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
-                <h3 className="font-anton text-sm text-[#CCFF00] mb-1 tracking-wider uppercase">{step.title}</h3>
-                <p className="font-space text-[10px] text-[#666] leading-tight uppercase font-bold">{step.desc}</p>
+                <h3 className="font-anton text-[9px] md:text-sm text-[#CCFF00] mb-0.5 md:mb-1 tracking-wider uppercase">{step.title}</h3>
+                <p className="font-space text-[7px] md:text-[10px] text-[#666] leading-tight uppercase font-bold">{step.desc}</p>
               </motion.div>
             ))}
           </div>
