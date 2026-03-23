@@ -270,7 +270,7 @@ export function Team() {
                       <div className={`absolute inset-0 bg-${category.color} translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-0`} />
                       
                       <div className="relative z-10 p-6 flex flex-col items-center text-center h-full">
-                        <div className={`w-32 h-32 mb-6 border-4 border-border group-hover:border-black transition-colors overflow-hidden transform -rotate-3 group-hover:rotate-0 duration-300 bg-surface`}>
+                        <div className={`w-32 h-32 mb-6 border-4 border-border group-hover:border-black transition-colors overflow-hidden transform -rotate-3 group-hover:rotate-0 duration-300 bg-transparent`}>
                           <img 
                             src={member.image} 
                             alt={member.name} 

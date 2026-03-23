@@ -472,23 +472,6 @@ export const EVENT_CATEGORIES: Record<string, {
     color: '#FF6B00',
     image: '/assets/events/cyber.png',
     events: [
-      {
-        name: 'ONLINE GAMING',
-        amount: 60,
-        isTeam: true,
-        subEvents: ['BGMI', 'Free Fire', 'Mini Militia', '8 Ball Pool', 'RC24', 'FIFA/E-Football', 'Tekken 3'],
-        description: 'Competitive e-sports tournament featuring the most popular games. Prove your skills in the digital arena.',
-        rules: [
-          'No use of hacks or third-party tools.',
-          'Players must bring their own devices and accessories.',
-          'Internet connection will be provided, but backup is recommended.',
-          'Tournament format will be shared on the day of event.'
-        ],
-        coordinators: [
-          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
-          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
-        ]
-      },
       { 
         name: 'CODE DEBUGGER', 
         amount: 50, 
@@ -520,6 +503,83 @@ export const EVENT_CATEGORIES: Record<string, {
         name: 'GUESS THE TECH', 
         amount: 50, 
         description: 'Identify tech brands, gadgets, and concepts from cryptic clues and logos.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      }
+    ]
+  },
+  gaming: {
+    label: 'Online Gaming',
+    color: '#FFD700',
+    image: '/assets/events/cyber.png',
+    events: [
+      {
+        name: 'BGMI',
+        amount: 60,
+        isTeam: true,
+        description: 'Battlegrounds Mobile India Tournament.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      {
+        name: 'FREE FIRE',
+        amount: 60,
+        isTeam: true,
+        description: 'Free Fire E-sports Tournament.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      {
+        name: 'MINI MILITIA',
+        amount: 60,
+        isTeam: true,
+        description: 'Doodle Army 2: Mini Militia Combat.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      {
+        name: '8 BALL POOL',
+        amount: 60,
+        isTeam: true,
+        description: 'Classic 8 Ball Pool Tournament.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      {
+        name: 'RC24',
+        amount: 60,
+        isTeam: true,
+        description: 'Real Cricket 24 Mobile Tournament.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      {
+        name: 'FIFA/E-FOOTBALL',
+        amount: 60,
+        isTeam: true,
+        description: 'Football E-sports Championship.',
+        coordinators: [
+          { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
+          { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }
+        ]
+      },
+      {
+        name: 'TEKKEN 3',
+        amount: 60,
+        isTeam: true,
+        description: 'Classic Fighting Game Tournament.',
         coordinators: [
           { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },
           { name: 'ABHISHEK JATAV (JR.HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '6386187250' }

@@ -4,12 +4,14 @@ import { Layout } from '../../components/Layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart3, Users, Calendar, Download, Plus, Trash2, Edit, Loader2, ShieldCheck,
-  UserPlus, FileDown, LogOut, Ticket, Search, X
+  UserPlus, FileDown, LogOut, Ticket, Search, X, Mail
 } from 'lucide-react';
 import { PasswordInput } from '../../components/PasswordInput';
 import { useAuth } from '../../lib/auth';
 import api from '../../lib/api';
 import toast, { Toaster } from 'react-hot-toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
+
 
 type Tab = 'overview' | 'students' | 'events' | 'registrations' | 'schedule' | 'users' | 'export';
 
@@ -57,6 +59,7 @@ export function Dashboard() {
   // Registrations
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [editingReg, setEditingReg] = useState<any>(null);
+  const [resendingRegId, setResendingRegId] = useState<string | null>(null);
 
   // Enhancement 1: Events category filter
   const [eventCategoryFilter, setEventCategoryFilter] = useState<string>('All');
@@ -83,6 +86,21 @@ export function Dashboard() {
   // Users
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['students', 'registrations'] });
+
+  // Custom Confirm Modal State
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmLabel?: string;
+    confirmColor?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   useEffect(() => {
     if (activeTab === 'overview') fetchAnalytics();
@@ -205,6 +223,45 @@ export function Dashboard() {
       setEditingReg(null);
       fetchRegistrations();
     } catch { toast.error('Failed to update registration'); }
+  };
+
+  const handleDeleteReg = async (id: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Registration',
+      message: 'ARE YOU SURE? THIS WILL PERMANENTLY DELETE THIS REGISTRATION! THIS ACTION CANNOT BE UNDONE.',
+      confirmLabel: 'Delete Forever',
+      confirmColor: '#FF0000',
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        setLoading(true);
+        try {
+          await api.delete(`/event-registrations/${id}`);
+          toast.success('Registration deleted');
+          setEditingReg(null);
+          fetchRegistrations();
+        } catch { 
+          toast.error('Failed to delete registration'); 
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  };
+
+  const handleResendRegEmail = async (id: string) => {
+    setResendingRegId(id);
+    try {
+      const { data } = await api.post(`/event-registrations/${id}/resend`);
+      if (data.success) {
+        toast.success('Confirmation email resent successfully');
+        fetchRegistrations();
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to resend email');
+    } finally {
+      setResendingRegId(null);
+    }
   };
 
   const fetchSchedule = async () => {
@@ -414,7 +471,7 @@ export function Dashboard() {
             <div className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard label="Total Students" value={stats.totalStudents} color="#CCFF00" />
-                <StatCard label="Processed" value={stats.processedStudents} color="#00FFFF" />
+                <StatCard label="Total Registered" value={stats.processedStudents} color="#00FFFF" />
                 {user?.role === 'superadmin' && <StatCard label="Total Revenue" value={`₹${stats.totalRevenue}`} color="#FF00FF" />}
               </div>
               {user?.role === 'superadmin' && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
@@ -742,12 +799,23 @@ export function Dashboard() {
                             <span className="opacity-60">{new Date(r.processedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           </td>
                           <td className="p-4">
+                            <div className="flex gap-2">
                                <button
                                  onClick={() => setEditingReg(r)}
                                  className="font-space font-bold text-xs uppercase tracking-widest px-3 py-1 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-2"
                                >
                                  <Edit size={12} /> Edit
                                </button>
+                               <button
+                                  onClick={() => handleResendRegEmail(r._id)}
+                                  disabled={resendingRegId === r._id}
+                                  className="font-space font-bold text-xs uppercase tracking-widest px-3 py-1 border-2 border-[#888] text-[#888] hover:border-[#FF00FF] hover:text-[#FF00FF] transition-colors flex items-center gap-2 disabled:opacity-50"
+                                  title="Resend Confirmation Email"
+                                >
+                                  {resendingRegId === r._id ? <Loader2 size={12} className="animate-spin" /> : <Mail size={12} />}
+                                  Resend
+                                </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1341,9 +1409,16 @@ export function Dashboard() {
                     />
                 </div>
 
-                <div className="flex gap-4 mt-8 pt-6 border-t-2 border-[#333]">
-                  <button type="submit" className="flex-1 bg-[#FF00FF] text-white font-anton text-xl uppercase py-4 border-2 border-white hover:bg-[#CCFF00] hover:text-black transition-all">
+                <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t-2 border-[#333]">
+                  <button type="submit" className="flex-[2] bg-[#FF00FF] text-white font-anton text-xl uppercase py-4 border-2 border-white hover:bg-[#CCFF00] hover:text-black transition-all">
                     Update Registration
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => handleDeleteReg(editingReg._id)}
+                    className="flex-1 bg-red-600 text-white font-anton text-xl uppercase py-4 border-2 border-red-800 hover:bg-red-500 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={20} /> Delete
                   </button>
                   <button type="button" onClick={() => setEditingReg(null)} className="flex-1 bg-transparent text-[#888] font-anton text-xl uppercase py-4 border-2 border-[#888] hover:border-white hover:text-white transition-all">
                     Cancel
@@ -1442,6 +1517,12 @@ export function Dashboard() {
         document.body
       )}
 
+      {/* MODALS */}
+      <ConfirmModal
+        {...confirmModal}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        loading={loading}
+      />
     </Layout>
   );
 }

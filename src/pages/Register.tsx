@@ -21,6 +21,8 @@ export function Register() {
   const [token, setToken] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [alreadyExisted, setAlreadyExisted] = useState(false);
+  const [pasts, setPasts] = useState<any[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -43,10 +45,18 @@ export function Register() {
       const { data } = await api.post('/students/register', formData);
       if (data.success) {
         setToken(data.token);
+        setAlreadyExisted(data.alreadyExisted || false);
+        setPasts(data.registrations || []);
         setSuccess(true);
-        toast.success('Registration successful!', {
-          style: { background: '#CCFF00', color: '#050505', borderRadius: '0', border: '4px solid #050505' }
-        });
+        if (data.alreadyExisted) {
+          toast.success('Welcome back!', {
+            style: { background: '#00FFFF', color: '#050505', borderRadius: '0', border: '4px solid #050505' }
+          });
+        } else {
+          toast.success('Registration successful!', {
+            style: { background: '#CCFF00', color: '#050505', borderRadius: '0', border: '4px solid #050505' }
+          });
+        }
       }
     } catch (err: any) {
       const msg = err.response?.data?.error || 'Registration failed';
@@ -87,7 +97,7 @@ export function Register() {
             </div>
             
             <h1 className="font-display text-3xl md:text-5xl text-[#CCFF00] mb-2 uppercase tracking-wider leading-tight">
-              Registration Complete!
+              {alreadyExisted ? 'Welcome Back!' : 'Registration Complete!'}
             </h1>
             <p className="font-space text-[#aaa] mb-8 uppercase text-[10px] md:text-xs font-bold tracking-widest px-2">
               Save this token — you'll need it at the venue
@@ -134,10 +144,41 @@ export function Register() {
               </ul>
             </div>
 
-            <p className="font-space text-[#666] text-[10px] uppercase leading-relaxed px-4">
+            <p className="font-space text-[#666] text-[10px] uppercase leading-relaxed px-4 mb-6">
               A confirmation email has been sent to <br/>
-              <span className="text-white border-b border-[#CCFF00] break-all">{formData.email}</span>
+              <span className="text-white border-b border-[#CCFF00] break-all">{formData.email || 'your email'}</span>
             </p>
+
+            {/* Past Registrations */}
+            {pasts.length > 0 && (
+              <div className="text-left bg-[#CCFF00]/5 border-2 border-[#CCFF00]/30 p-5 md:p-6 mb-8">
+                <h3 className="font-display text-xl text-[#CCFF00] mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <Ticket size={20} /> Your Active Events
+                </h3>
+                <div className="space-y-4">
+                  {pasts.map((reg, rid) => (
+                    <div key={rid} className="border-b border-[#333] pb-3 last:border-0 last:pb-0">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[10px] font-space text-[#888] uppercase tracking-widest">
+                          ID: {reg._id.substring(0, 8).toUpperCase()}
+                        </span>
+                        <span className="text-[10px] font-space text-[#CCFF00] font-bold uppercase">
+                          Rs. {reg.totalAmount}
+                        </span>
+                      </div>
+                      <ul className="space-y-1">
+                        {reg.events.map((ev: any, eid: number) => (
+                          <li key={eid} className="text-xs font-space text-white uppercase flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-[#CCFF00] shrink-0" />
+                            {ev.eventName} {ev.subEvent ? `(${ev.subEvent})` : ''}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       </Layout>
