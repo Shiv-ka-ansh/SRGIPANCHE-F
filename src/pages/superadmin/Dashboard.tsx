@@ -768,14 +768,20 @@ export function Dashboard() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-[#050505] border-b-4 border-[#333]">
-                        {['Student/Team Leader', 'Roll No', 'Type', 'Events', 'Total', 'Processed By', 'Date', 'Actions'].map(h => (
-                          <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
+                        {['S.No.', 'Token No.', 'Student/Team Leader', 'Roll No', 'Mobile No.', 'Branch', 'Type', 'Events', 'Total', 'Processed By', 'Date', 'Actions'].map(h => (
+                          <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredRegistrations.map((r: any) => (
+                      {filteredRegistrations.map((r: any, index: number) => (
                         <tr key={r._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
+                          <td className="p-4 font-space font-bold text-white text-sm">
+                            {index + 1}
+                          </td>
+                          <td className="p-4 font-space text-[#CCFF00] text-sm font-bold uppercase tracking-wider">
+                            {r.token || "-"}
+                          </td>
                           <td className="p-4">
                             <div className="font-space font-bold text-white text-sm">{r.studentName}</div>
                             {r.isGroup && r.groupMembers && r.groupMembers.length > 0 && (
@@ -783,6 +789,8 @@ export function Dashboard() {
                             )}
                           </td>
                           <td className="p-4 font-space text-[#aaa] text-sm">{r.rollNo}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">{r.mobileNo || "-"}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm uppercase">{r.branch || "-"}</td>
                           <td className="p-4">
                               {r.isGroup 
                                 ? <span className="text-[#FF00FF] font-space text-xs font-bold border border-[#FF00FF] px-2 py-1 uppercase">Group</span>

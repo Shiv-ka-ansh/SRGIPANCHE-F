@@ -18,12 +18,17 @@ import {
   Plus,
   Trash2,
   AlertTriangle,
+  Download,
+  Eye,
+  Calendar,
+  FileDown,
 } from "lucide-react";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { useAuth } from "../../lib/auth";
 import api from "../../lib/api";
 import { EVENT_CATEGORIES } from "../../lib/eventData";
 import toast, { Toaster } from "react-hot-toast";
+import * as XLSX from "xlsx";
 
 interface StudentData {
   _id: string;
@@ -38,6 +43,7 @@ interface StudentData {
   status: string;
   token: string;
   emailSent?: boolean;
+  registrations?: { eventName: string; category: string; amount: number; subEvent?: string }[];
 }
 
 interface GroupMember {
@@ -60,7 +66,7 @@ const categoryKeys = Object.keys(EVENT_CATEGORIES);
 
 export function Dashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<"single" | "group" | "students">(
+  const [activeTab, setActiveTab] = useState<"single" | "group" | "students" | "registrations">(
     "single",
   );
 
@@ -97,6 +103,14 @@ export function Dashboard() {
     null,
   );
 
+  // All Registrations Tab State
+  const [allRegistrations, setAllRegistrations] = useState<any[]>([]);
+  const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+  const [regEventFilter, setRegEventFilter] = useState("All");
+  const [regCategoryFilter, setRegCategoryFilter] = useState("All");
+
+  const isSuperAdmin = user?.role === 'superadmin';
+
   // Custom Confirm Modal State
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -116,6 +130,9 @@ export function Dashboard() {
     if (activeTab === "students") {
       fetchStudents();
     }
+    if (activeTab === "registrations") {
+      fetchAllRegistrations();
+    }
   }, [activeTab]);
 
   const fetchStudents = async () => {
@@ -131,6 +148,20 @@ export function Dashboard() {
       toast.error("Failed to fetch students");
     } finally {
       setLoadingStudents(false);
+    }
+  };
+
+  const fetchAllRegistrations = async () => {
+    setLoadingRegistrations(true);
+    try {
+      const { data } = await api.get("/event-registrations");
+      if (data.success) {
+        setAllRegistrations(data.registrations || []);
+      }
+    } catch {
+      toast.error("Failed to fetch registrations");
+    } finally {
+      setLoadingRegistrations(false);
     }
   };
 
@@ -458,6 +489,61 @@ export function Dashboard() {
     }
   };
 
+  // Get unique event names and categories from all registrations for filter dropdowns
+  const uniqueEvents = Array.from(new Set(
+    allRegistrations.flatMap((r: any) => (r.events || []).map((e: any) => e.eventName))
+  )).sort();
+  const uniqueCategories = Array.from(new Set(
+    allRegistrations.flatMap((r: any) => (r.events || []).map((e: any) => e.category))
+  )).filter(Boolean).sort();
+
+  // Filter registrations based on selected filters
+  const filteredRegistrations = allRegistrations.filter((r: any) => {
+    if (regCategoryFilter !== "All") {
+      const hasCategory = r.events?.some((e: any) => e.category === regCategoryFilter);
+      if (!hasCategory) return false;
+    }
+    if (regEventFilter !== "All") {
+      const hasEvent = r.events?.some((e: any) => e.eventName === regEventFilter);
+      if (!hasEvent) return false;
+    }
+    return true;
+  });
+
+  // Export filtered registrations as Excel (.xlsx) (without amount)
+  const handleExportRegistrations = () => {
+    if (filteredRegistrations.length === 0) {
+      toast.error("No registrations to export");
+      return;
+    }
+    const headers = ["Student Name", "Roll No", "Mobile No", "Token", "Type", "Events", "Categories", "Sub Events", "Group Members", "Date"];
+    const rows = filteredRegistrations.map((r: any) => [
+      r.studentName || "",
+      r.rollNo || "",
+      r.mobileNo || "",
+      r.token || "",
+      r.isGroup ? "Group" : "Single",
+      (r.events || []).map((e: any) => e.eventName).join(", "),
+      (r.events || []).map((e: any) => e.category).join(", "),
+      (r.events || []).map((e: any) => e.subEvent || "").filter(Boolean).join(", "),
+      (r.groupMembers || []).join(", "),
+      r.processedAt ? new Date(r.processedAt).toLocaleDateString("en-IN") : "",
+    ]);
+    
+    // Create worksheet and workbook
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+
+    // Generate valid Excel filename
+    const filterLabel = regEventFilter !== "All" ? `_${regEventFilter.replace(/\s+/g, "_")}` : (regCategoryFilter !== "All" ? `_${regCategoryFilter}` : "");
+    const fileName = `panache_registrations${filterLabel}.xlsx`;
+    
+    // Trigger download
+    XLSX.writeFile(wb, fileName);
+    toast.success("Registrations exported to Excel!");
+  };
+
   // Renders the Event Selection Component reused in both Single and Group flows
   const EventSelectionUI = ({
     showOnlyTeam = false,
@@ -747,6 +833,11 @@ export function Dashboard() {
                 id: "students",
                 label: "All Students",
                 icon: <List size={18} />,
+              },
+              {
+                id: "registrations",
+                label: "Registrations",
+                icon: <Calendar size={18} />,
               },
             ].map((tab) => (
               <button
@@ -1145,9 +1236,6 @@ export function Dashboard() {
                   >
                     <option value="All">All Branches</option>
                     <option value="BTECH">B.Tech</option>
-                    <option value="BCA">BCA</option>
-                    <option value="BBA">BBA</option>
-                    <option value="MBA">MBA</option>
                     <option value="POLYTECHNIC">Polytechnic</option>
                   </select>
                 </div>
@@ -1175,7 +1263,7 @@ export function Dashboard() {
                           "Contact",
                           "Course",
                           "Token",
-                          "Actions",
+                          ...(isSuperAdmin ? ["Actions"] : ["Registrations"]),
                         ].map((h) => (
                           <th
                             key={h}
@@ -1228,31 +1316,51 @@ export function Dashboard() {
                             </div>
                           </td>
                           <td className="p-4">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => setEditingStudent(s)}
-                                className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1"
-                              >
-                                <Edit size={12} /> Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteStudent(s._id, s.fullName)}
-                                className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1"
-                              >
-                                <Trash2 size={12} /> Delete
-                              </button>
-                              <button
-                                onClick={() => handleResendToStudent(s._id)}
-                                disabled={resendingStudentId === s._id}
-                                className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-white/20 text-white/50 hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1 disabled:opacity-50"
-                              >
-                                {resendingStudentId === s._id ? (
-                                  <Loader2 size={12} className="animate-spin" />
+                            <div className="flex flex-wrap gap-2">
+                              {isSuperAdmin ? (
+                                <>
+                                  <button
+                                    onClick={() => setEditingStudent(s)}
+                                    className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-[#888] text-[#888] hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1"
+                                  >
+                                    <Edit size={12} /> Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteStudent(s._id, s.fullName)}
+                                    className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1"
+                                  >
+                                    <Trash2 size={12} /> Delete
+                                  </button>
+                                  <button
+                                    onClick={() => handleResendToStudent(s._id)}
+                                    disabled={resendingStudentId === s._id}
+                                    className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-white/20 text-white/50 hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1 disabled:opacity-50"
+                                  >
+                                    {resendingStudentId === s._id ? (
+                                      <Loader2 size={12} className="animate-spin" />
+                                    ) : (
+                                      <Mail size={12} />
+                                    )}{" "}
+                                    Email
+                                  </button>
+                                </>
+                              ) : (
+                                s.registrations && s.registrations.length > 0 ? (
+                                  s.registrations.map((e: any, i: number) => (
+                                    <span
+                                      key={i}
+                                      className="font-space text-[10px] font-bold bg-[#050505] border border-[#CCFF00]/30 text-[#CCFF00] px-2 py-0.5 uppercase"
+                                    >
+                                      {e.eventName}
+                                      {e.subEvent ? ` (${e.subEvent})` : ""}
+                                    </span>
+                                  ))
                                 ) : (
-                                  <Mail size={12} />
-                                )}{" "}
-                                Email
-                              </button>
+                                  <span className="font-space text-[10px] text-[#888] uppercase tracking-wider">
+                                    No Registrations
+                                  </span>
+                                )
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -1264,6 +1372,206 @@ export function Dashboard() {
                             className="p-12 text-center font-space text-[#888] uppercase tracking-widest"
                           >
                             No students found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ==== REGISTRATIONS TAB ==== */}
+          {activeTab === "registrations" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {/* Filters Bar */}
+              <div
+                className="bg-[#121212] border-4 border-[#333] p-6 mb-8 flex flex-col md:flex-row gap-4 justify-between items-end"
+                style={{ boxShadow: "8px 8px 0px #333" }}
+              >
+                <div className="flex flex-wrap gap-4 flex-1">
+                  <div className="flex-1 min-w-[150px]">
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">
+                      Category
+                    </label>
+                    <select
+                      value={regCategoryFilter}
+                      onChange={(e) => {
+                        setRegCategoryFilter(e.target.value);
+                        setRegEventFilter("All");
+                      }}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                    >
+                      <option value="All">All Categories</option>
+                      {uniqueCategories.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex-1 min-w-[150px]">
+                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">
+                      Event
+                    </label>
+                    <select
+                      value={regEventFilter}
+                      onChange={(e) => setRegEventFilter(e.target.value)}
+                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
+                    >
+                      <option value="All">All Events</option>
+                      {uniqueEvents
+                        .filter((ev) => {
+                          if (regCategoryFilter === "All") return true;
+                          return allRegistrations.some((r: any) =>
+                            r.events?.some((e: any) => e.eventName === ev && e.category === regCategoryFilter)
+                          );
+                        })
+                        .map((ev) => (
+                          <option key={ev} value={ev}>{ev}</option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={fetchAllRegistrations}
+                    className="bg-[#CCFF00] text-[#050505] font-anton px-6 py-3 border-2 border-transparent hover:bg-white transition-colors flex items-center gap-2"
+                  >
+                    <Search size={16} /> Refresh
+                  </button>
+                  <button
+                    onClick={handleExportRegistrations}
+                    disabled={filteredRegistrations.length === 0}
+                    className="bg-[#121212] border-4 border-[#CCFF00] text-[#CCFF00] font-anton px-6 py-2 uppercase hover:bg-[#CCFF00] hover:text-[#050505] transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <FileDown size={18} /> Export Excel
+                  </button>
+                </div>
+              </div>
+
+              {/* Count Info */}
+              <div className="flex items-center justify-between mb-4">
+                <p className="font-space text-[#888] text-xs uppercase tracking-widest">
+                  Showing {filteredRegistrations.length} of {allRegistrations.length} registrations
+                </p>
+                {(regCategoryFilter !== "All" || regEventFilter !== "All") && (
+                  <button
+                    onClick={() => { setRegCategoryFilter("All"); setRegEventFilter("All"); }}
+                    className="font-space text-xs text-red-400 uppercase tracking-widest hover:text-red-300 transition-colors"
+                  >
+                    × Clear Filters
+                  </button>
+                )}
+              </div>
+
+              {/* Registrations Table */}
+              <div
+                className="bg-[#121212] border-4 border-[#333] overflow-hidden relative"
+                style={{ boxShadow: "8px 8px 0px #333" }}
+              >
+                {loadingRegistrations && (
+                  <div className="absolute inset-0 bg-[#050505]/80 flex items-center justify-center z-10">
+                    <Loader2 className="animate-spin text-[#CCFF00]" size={48} />
+                  </div>
+                )}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-[#050505] border-b-4 border-[#333]">
+                        {[
+                          "S. No.",
+                          "Token No.",
+                          "Student / Team Leader",
+                          "Branch",
+                          "Type",
+                          "Events",
+                          "Processed By",
+                          "Date",
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest whitespace-nowrap"
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredRegistrations.map((r: any, index: number) => (
+                        <tr
+                          key={r._id}
+                          className="border-b border-[#222] hover:bg-white/5 transition-colors"
+                        >
+                          <td className="p-4 font-space font-bold text-white text-sm">
+                            {index + 1}
+                          </td>
+                          <td className="p-4 font-space text-[#CCFF00] text-sm font-bold uppercase tracking-wider">
+                            {r.token || "-"}
+                          </td>
+                          <td className="p-4">
+                            <div className="font-space font-bold text-white text-sm uppercase">
+                              {r.studentName}
+                            </div>
+                            {r.isGroup && r.groupMembers && r.groupMembers.length > 0 && (
+                              <div className="font-space text-[#aaa] text-xs mt-1">
+                                +{r.groupMembers.length} members: {r.groupMembers.join(", ")}
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-4 font-space text-[#aaa] text-sm uppercase">
+                            {r.branch || "-"}
+                          </td>
+                          <td className="p-4">
+                            {r.isGroup ? (
+                              <span className="text-[#FF00FF] font-space text-xs font-bold border border-[#FF00FF] px-2 py-1 uppercase">
+                                Group
+                              </span>
+                            ) : (
+                              <span className="text-[#00FFFF] font-space text-xs font-bold border border-[#00FFFF] px-2 py-1 uppercase">
+                                Single
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-wrap gap-1">
+                              {(r.events || []).map((e: any, i: number) => (
+                                <span
+                                  key={i}
+                                  className="font-space text-[10px] font-bold bg-[#050505] border border-[#CCFF00]/30 text-[#CCFF00] px-2 py-0.5 uppercase"
+                                >
+                                  {e.eventName}
+                                  {e.subEvent ? ` (${e.subEvent})` : ""}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="p-4 font-space text-[#aaa] text-sm">
+                            {r.processedBy?.name || "N/A"}
+                          </td>
+                          <td className="p-4 font-space text-[#888] text-xs leading-tight">
+                            {r.processedAt
+                              ? new Date(r.processedAt).toLocaleDateString("en-IN")
+                              : "-"}
+                            <br />
+                            <span className="opacity-60">
+                              {r.processedAt
+                                ? new Date(r.processedAt).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })
+                                : ""}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                      {filteredRegistrations.length === 0 && !loadingRegistrations && (
+                        <tr>
+                          <td
+                            colSpan={8}
+                            className="p-12 text-center font-space text-[#888] uppercase tracking-widest"
+                          >
+                            No registrations found
                           </td>
                         </tr>
                       )}
@@ -1458,18 +1766,20 @@ export function Dashboard() {
                     >
                       Save Changes
                     </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleDeleteStudent(
-                          editingStudent._id,
-                          editingStudent.fullName,
-                        )
-                      }
-                      className="flex-1 bg-red-600 text-white font-anton text-xl uppercase py-4 border-2 border-red-800 hover:bg-red-500 transition-all flex items-center justify-center gap-2"
-                    >
-                      <Trash2 size={20} /> Delete
-                    </button>
+                    {isSuperAdmin && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteStudent(
+                            editingStudent._id,
+                            editingStudent.fullName,
+                          )
+                        }
+                        className="flex-1 bg-red-600 text-white font-anton text-xl uppercase py-4 border-2 border-red-800 hover:bg-red-500 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Trash2 size={20} /> Delete
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setEditingStudent(null)}
@@ -1485,6 +1795,7 @@ export function Dashboard() {
         </AnimatePresence>,
         document.body,
       )}
+
     </Layout>
   );
 }
