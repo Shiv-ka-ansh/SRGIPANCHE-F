@@ -25,6 +25,18 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'export', label: 'Export', icon: <Download size={18} /> },
 ];
 
+export const ALL_PERMISSIONS = [
+  { key: 'overview', label: 'Overview Dashboard' },
+  { key: 'single', label: 'Single Reg (POS)' },
+  { key: 'group', label: 'Group Reg (POS)' },
+  { key: 'students', label: 'Students List' },
+  { key: 'registrations', label: 'Registrations List' },
+  { key: 'events', label: 'Events Catalog' },
+  { key: 'schedule', label: 'Schedule Manager' },
+  { key: 'users', label: 'Admin Users' },
+  { key: 'export', label: 'Export Center' },
+];
+
 export function Dashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>(
@@ -86,7 +98,8 @@ export function Dashboard() {
   
   // Users
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
-  const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['students', 'registrations'] });
+  const [newAdmin, setNewAdmin] = useState({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['single', 'group', 'students', 'registrations'] });
+  const [editingAdmin, setEditingAdmin] = useState<any>(null);
 
   // Custom Confirm Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -311,10 +324,33 @@ export function Dashboard() {
     try {
       await api.post('/users', newAdmin);
       toast.success('Admin created');
-      setNewAdmin({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['students', 'registrations'] });
+      setNewAdmin({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['single', 'group', 'students', 'registrations'] });
       fetchUsers();
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Failed to create admin');
+    }
+  };
+
+  const handleUpdateAdmin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!editingAdmin) return;
+    try {
+      const payload: any = {
+        name: newAdmin.name,
+        email: newAdmin.email,
+        role: newAdmin.role,
+        allowedTabs: newAdmin.allowedTabs,
+      };
+      if (newAdmin.password && newAdmin.password.trim().length > 0) {
+        payload.password = newAdmin.password;
+      }
+      await api.put(`/users/${editingAdmin._id}`, payload);
+      toast.success('Admin updated successfully');
+      setEditingAdmin(null);
+      setNewAdmin({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['single', 'group', 'students', 'registrations'] });
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Failed to update admin');
     }
   };
 
@@ -496,20 +532,21 @@ export function Dashboard() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
 
-                  {stats.branchBreakdown && Object.keys(stats.branchBreakdown).length > 0 && (
-                    <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
-                      <h3 className="font-anton text-xl text-[#00FFFF] uppercase mb-6">Registrations by Branch</h3>
-                      <div className="space-y-4">
-                        {Object.entries(stats.branchBreakdown).map(([branch, count]: [string, any]) => (
-                          <div key={branch} className="flex items-center justify-between border-b border-[#333] pb-3">
-                            <span className="font-space font-bold text-white text-sm uppercase tracking-wider">{branch}</span>
-                            <span className="font-anton text-xl text-[#00FFFF]">{count}</span>
-                          </div>
-                        ))}
+              {/* Registrations by Branch - always visible */}
+              {stats.branchBreakdown && Object.keys(stats.branchBreakdown).length > 0 && (
+                <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                  <h3 className="font-anton text-xl text-[#00FFFF] uppercase tracking-wider mb-6">Registrations by Branch</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {Object.entries(stats.branchBreakdown).sort((a: any, b: any) => b[1] - a[1]).map(([branch, count]: [string, any]) => (
+                      <div key={branch} className="bg-[#050505] border-2 border-[#333] p-4 hover:border-[#00FFFF] transition-colors">
+                        <p className="font-space font-bold text-white text-xs uppercase tracking-wider mb-1">{branch}</p>
+                        <p className="font-anton text-3xl text-[#00FFFF]">{count}</p>
                       </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -543,9 +580,6 @@ export function Dashboard() {
                   >
                     <option value="All">All Branches</option>
                     <option value="BTECH">B.Tech</option>
-                    <option value="BCA">BCA</option>
-                    <option value="BBA">BBA</option>
-                    <option value="MBA">MBA</option>
                     <option value="POLYTECHNIC">Polytechnic</option>
                   </select>
                 </div>
@@ -938,7 +972,7 @@ export function Dashboard() {
           {!loading && activeTab === 'users' && (
             <div className="space-y-8">
               <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
-                <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">Create Admin User</h3>
+                <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">{editingAdmin ? 'Edit Admin User' : 'Create Admin User'}</h3>
                 
                 {/* Hidden fields to trick browser auto-fill */}
                 <input type="text" style={{ display: 'none' }} aria-hidden="true" />
@@ -961,7 +995,7 @@ export function Dashboard() {
                     autoComplete="new-email"
                   />
                   <PasswordInput 
-                    placeholder="Password" 
+                    placeholder={editingAdmin ? "New Password (leave blank to keep)" : "Password"} 
                     value={newAdmin.password} 
                     onChange={e => setNewAdmin({...newAdmin, password: e.target.value})} 
                     className={inputClass} 
@@ -981,7 +1015,7 @@ export function Dashboard() {
                   <div className="mb-6">
                     <label className={labelClass}>Tab Access Permissions</label>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {TABS.map(tab => (
+                      {ALL_PERMISSIONS.map(tab => (
                         <label key={tab.key} className={`flex items-center gap-2 p-2 border-2 cursor-pointer transition-all ${newAdmin.allowedTabs.includes(tab.key) ? 'border-[#CCFF00] bg-[#CCFF00]/5 text-[#CCFF00]' : 'border-[#222] text-[#888]'}`}>
                           <input 
                             type="checkbox"
@@ -1004,9 +1038,25 @@ export function Dashboard() {
                     </div>
                   </div>
                 )}
-                <button onClick={handleCreateAdmin} className="bg-[#CCFF00] text-[#050505] font-space font-bold text-sm uppercase px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2">
-                  <UserPlus size={16} /> Create Admin
-                </button>
+                <div className="flex gap-4">
+                  {editingAdmin ? (
+                    <>
+                      <button onClick={handleUpdateAdmin} className="bg-[#CCFF00] text-[#050505] font-space font-bold text-sm uppercase px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2">
+                        <Edit size={16} /> Update Admin
+                      </button>
+                      <button onClick={() => {
+                        setEditingAdmin(null);
+                        setNewAdmin({ name: '', email: '', password: '', role: 'admin', allowedTabs: ['single', 'group', 'students', 'registrations'] });
+                      }} className="bg-transparent text-[#888] font-space font-bold text-sm uppercase px-6 py-3 border-2 border-[#888] hover:border-white hover:text-white transition-all flex items-center gap-2">
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={handleCreateAdmin} className="bg-[#CCFF00] text-[#050505] font-space font-bold text-sm uppercase px-6 py-3 border-4 border-[#050505] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2">
+                      <UserPlus size={16} /> Create Admin
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="bg-[#121212] border-4 border-[#333] overflow-hidden" style={{ boxShadow: '8px 8px 0px #333' }}>
@@ -1014,7 +1064,7 @@ export function Dashboard() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-[#050505] border-b-4 border-[#333]">
-                        {['Name', 'Email', 'Role', 'Created', 'Actions'].map(h => (
+                        {['Name', 'Email', 'Role', 'Permissions', 'Created', 'Actions'].map(h => (
                           <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
                         ))}
                       </tr>
@@ -1029,11 +1079,29 @@ export function Dashboard() {
                               {u.role}
                             </span>
                           </td>
+                          <td className="p-4">
+                            <div className="flex flex-wrap gap-1 max-w-xs">
+                              {(u.allowedTabs || []).map((tab: string) => (
+                                <span key={tab} className="font-space text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border border-[#444] text-[#aaa] bg-[#050505]">
+                                  {tab}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
                           <td className="p-4 font-space text-[#888] text-sm">{new Date(u.createdAt).toLocaleDateString()}</td>
                           <td className="p-4 text-right">
-                             <button onClick={() => handleDeleteUser(u._id)} className="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
+                            <div className="flex gap-2 justify-end">
+                              <button onClick={() => {
+                                setEditingAdmin(u);
+                                setNewAdmin({ name: u.name, email: u.email, password: '', role: u.role, allowedTabs: u.allowedTabs || [] });
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }} className="p-2 border border-[#CCFF00] text-[#CCFF00] hover:bg-[#CCFF00] hover:text-[#050505] transition-colors">
+                                <Edit size={14} />
+                              </button>
+                              <button onClick={() => handleDeleteUser(u._id)} className="p-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition-colors">
                                 <Trash2 size={14} />
-                             </button>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

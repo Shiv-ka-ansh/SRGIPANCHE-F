@@ -4,6 +4,7 @@ import { Layout } from "../../components/Layout";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
+  BarChart3,
   Loader2,
   CheckCircle2,
   User,
@@ -72,8 +73,12 @@ const categoryKeys = Object.keys(EVENT_CATEGORIES);
 export function Dashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<
-    "single" | "group" | "students" | "registrations"
-  >("single");
+    "overview" | "single" | "group" | "students" | "registrations"
+  >(
+    (user?.role === "superadmin" || user?.allowedTabs?.includes("overview"))
+      ? "overview"
+      : (user?.allowedTabs?.find((t) => ["single", "group", "students", "registrations"].includes(t)) as any) || "single"
+  );
 
   // Universal Event Selection States
   const [activeCategory, setActiveCategory] = useState(categoryKeys[0]);
@@ -116,6 +121,10 @@ export function Dashboard() {
   const [regEventFilter, setRegEventFilter] = useState("All");
   const [regCategoryFilter, setRegCategoryFilter] = useState("All");
 
+  // Analytics Stats
+  const [stats, setStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+
   const isSuperAdmin = user?.role === "superadmin";
 
   // Custom Confirm Modal State
@@ -140,7 +149,24 @@ export function Dashboard() {
     if (activeTab === "registrations") {
       fetchAllRegistrations();
     }
+    if (activeTab === "overview") {
+      fetchAnalytics();
+    }
   }, [activeTab]);
+
+  const fetchAnalytics = async () => {
+    setLoadingStats(true);
+    try {
+      const { data } = await api.get("/analytics");
+      if (data.success) {
+        setStats(data.stats);
+      }
+    } catch {
+      toast.error("Failed to fetch analytics");
+    } finally {
+      setLoadingStats(false);
+    }
+  };
 
   const fetchStudents = async () => {
     setLoadingStudents(true);
@@ -868,6 +894,11 @@ export function Dashboard() {
           <div className="flex flex-wrap gap-2 mb-8 bg-[#121212] border-2 border-[#333] p-2">
             {[
               {
+                id: "overview",
+                label: "Overview",
+                icon: <BarChart3 size={18} />,
+              },
+              {
                 id: "single",
                 label: "Single Registration",
                 icon: <User size={18} />,
@@ -887,7 +918,9 @@ export function Dashboard() {
                 label: "Registrations",
                 icon: <Calendar size={18} />,
               },
-            ].map((tab) => (
+            ]
+              .filter((tab) => isSuperAdmin || user?.allowedTabs?.includes(tab.id))
+              .map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => {
@@ -909,6 +942,82 @@ export function Dashboard() {
               </button>
             ))}
           </div>
+
+          {/* ==== OVERVIEW DASHBOARD ==== */}
+          {activeTab === "overview" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+              {loadingStats ? (
+                <div className="flex items-center justify-center p-12">
+                  <Loader2 className="animate-spin text-[#CCFF00]" size={48} />
+                </div>
+              ) : stats ? (
+                <>
+                  {/* Top Stat Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} className="bg-[#121212] border-4 p-6" style={{ borderColor: '#FF00FF', boxShadow: '8px 8px 0px #FF00FF' }}>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-[#FF00FF]">
+                          <Users size={24} color="#050505" />
+                        </div>
+                      </div>
+                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">Total Students</h3>
+                      <p className="font-anton text-4xl text-white mt-2">{stats.totalStudents}</p>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#121212] border-4 p-6" style={{ borderColor: '#CCFF00', boxShadow: '8px 8px 0px #CCFF00' }}>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-[#CCFF00]">
+                          <CheckCircle2 size={24} color="#050505" />
+                        </div>
+                      </div>
+                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">Students Registered</h3>
+                      <p className="font-anton text-4xl text-white mt-2">{stats.processedStudents}</p>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#121212] border-4 p-6" style={{ borderColor: '#00FFFF', boxShadow: '8px 8px 0px #00FFFF' }}>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-[#00FFFF]">
+                          <Calendar size={24} color="#050505" />
+                        </div>
+                      </div>
+                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">Total Registrations</h3>
+                      <p className="font-anton text-4xl text-white mt-2">{stats.totalRegistrations}</p>
+                    </motion.div>
+                  </div>
+
+                  {/* Registered by Category */}
+                  {stats.categoryCounts && Object.keys(stats.categoryCounts).length > 0 && (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                      <h3 className="font-anton text-xl text-[#CCFF00] uppercase tracking-wider mb-6">Registered by Category</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {Object.entries(stats.categoryCounts).sort((a: any, b: any) => b[1] - a[1]).map(([category, count]: any) => (
+                          <div key={category} className="bg-[#050505] border-2 border-[#333] p-4 hover:border-[#CCFF00] transition-colors">
+                            <p className="font-space font-bold text-white text-sm uppercase tracking-wider mb-1">{category}</p>
+                            <p className="font-anton text-3xl text-[#CCFF00]">{count}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Registrations by Branch */}
+                  {stats.branchBreakdown && Object.keys(stats.branchBreakdown).length > 0 && (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                      <h3 className="font-anton text-xl text-[#00FFFF] uppercase tracking-wider mb-6">Registrations by Branch</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {Object.entries(stats.branchBreakdown).sort((a: any, b: any) => b[1] - a[1]).map(([branch, count]: any) => (
+                          <div key={branch} className="bg-[#050505] border-2 border-[#333] p-4 hover:border-[#00FFFF] transition-colors">
+                            <p className="font-space font-bold text-white text-xs uppercase tracking-wider mb-1">{branch}</p>
+                            <p className="font-anton text-3xl text-[#00FFFF]">{count}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </>
+              ) : null}
+            </motion.div>
+          )}
 
           {/* ==== SINGLE REGISTRATION FLOW ==== */}
           {activeTab === "single" && !registrationDone && (

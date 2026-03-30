@@ -7,8 +7,8 @@ import { MagneticButton } from './MagneticButton';
 
 export function Hero() {
   const calculateTimeLeft = () => {
-    const targetDate = new Date('2026-03-28T09:00:00').getTime();
-    const endDate = new Date('2026-03-31T23:59:59').getTime();
+    const targetDate = new Date('2026-04-06T09:00:00').getTime();
+    const endDate = new Date('2026-04-10T23:59:59').getTime();
     const now = new Date().getTime();
     
     const distance = targetDate - now;
@@ -84,7 +84,7 @@ export function Hero() {
               className="mb-8 border-2 border-white/20 px-4 py-3 flex flex-wrap items-center gap-3 sm:gap-4 font-sans font-bold uppercase tracking-widest text-xs sm:text-sm bg-surface/50 backdrop-blur-sm"
             >
               <span className="flex items-center gap-2 text-primary"><Calendar size={14} className="sm:w-4 sm:h-4" /> 
-              MARCH 28-04
+              MARCH 06-10
               </span>
               <span className="w-1.5 h-1.5 bg-white rounded-full" />
               <span className="flex items-center gap-2 text-secondary"><MapPin size={16} /> 
