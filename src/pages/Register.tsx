@@ -301,7 +301,7 @@ export function Register() {
                 >
                   <option value="">Select Course</option>
                   <option value="B.Tech">B.Tech</option>
-                  <option value="M.Tech">M.Tech</option>
+                  {/* <option value="M.Tech">M.Tech</option> */}
                   <option value="Polytechnic">Polytechnic</option>
                   <option value="Other">Other</option>
                 </select>
@@ -314,15 +314,25 @@ export function Register() {
                 <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">
                   Branch
                 </label>
-                <input
-                  type="text"
+                <select
                   name="branch"
                   required
                   value={formData.branch}
                   onChange={handleChange}
                   className="w-full bg-[#050505] font-space text-white border-4 border-[#333] p-4 outline-none focus:border-[#CCFF00] transition-colors"
-                  placeholder="E.G. CSE, ECE, ME"
-                />
+                >
+                  <option value="">Select Branch</option>
+                  <option value="CSE">CSE</option>
+                  <option value="CSDS">CSDS</option>
+                  <option value="CSIOT">CSIOT</option>
+                  <option value="CSIT">CSIT</option>
+                  <option value="CSAIML">CSAIML</option>
+                  <option value="CSCYBER SECURITY">CSCYBER SECURITY</option>
+                  <option value="MECHANICAL">MECHANICAL</option>
+                  <option value="CIVIL">CIVIL</option>
+                  <option value="ELECTRONICS">ELECTRONICS</option>
+                  <option value="ELECTRICAL">ELECTRICAL</option>
+                </select>
               </div>
               <div>
                 <label className="block font-space font-bold uppercase text-[#CCFF00] mb-2 text-sm">

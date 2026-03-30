@@ -21,11 +21,6 @@ body {
   color: var(--color-text-main);
   font-family: var(--font-sans);
   overflow-x: hidden;
-  cursor: none;
-}
-
-a, button, input, textarea, select, .interactive {
-  cursor: none;
 }
 
 h1, h2, h3, h4, h5, h6 {

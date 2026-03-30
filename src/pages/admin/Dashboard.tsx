@@ -43,7 +43,12 @@ interface StudentData {
   status: string;
   token: string;
   emailSent?: boolean;
-  registrations?: { eventName: string; category: string; amount: number; subEvent?: string }[];
+  registrations?: {
+    eventName: string;
+    category: string;
+    amount: number;
+    subEvent?: string;
+  }[];
 }
 
 interface GroupMember {
@@ -66,9 +71,9 @@ const categoryKeys = Object.keys(EVENT_CATEGORIES);
 
 export function Dashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<"single" | "group" | "students" | "registrations">(
-    "single",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "single" | "group" | "students" | "registrations"
+  >("single");
 
   // Universal Event Selection States
   const [activeCategory, setActiveCategory] = useState(categoryKeys[0]);
@@ -80,7 +85,9 @@ export function Dashboard() {
   // Single Registration States
   const [tokenInput, setTokenInput] = useState("");
   const [student, setStudent] = useState<StudentData | null>(null);
-  const [studentRegistrations, setStudentRegistrations] = useState<SelectedEvent[]>([]);
+  const [studentRegistrations, setStudentRegistrations] = useState<
+    SelectedEvent[]
+  >([]);
   const [verifying, setVerifying] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [registrationDone, setRegistrationDone] = useState(false);
@@ -109,7 +116,7 @@ export function Dashboard() {
   const [regEventFilter, setRegEventFilter] = useState("All");
   const [regCategoryFilter, setRegCategoryFilter] = useState("All");
 
-  const isSuperAdmin = user?.role === 'superadmin';
+  const isSuperAdmin = user?.role === "superadmin";
 
   // Custom Confirm Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -182,11 +189,11 @@ export function Dashboard() {
       if (data.success) {
         setStudent(data.student);
         // FLATTEN REGISTRATIONS TO SHOW EVENTS
-        const allEvents = (data.registrations || []).flatMap((r: any) => 
+        const allEvents = (data.registrations || []).flatMap((r: any) =>
           (r.events || []).map((e: any) => ({
             ...e,
-            processedAt: r.processedAt
-          }))
+            processedAt: r.processedAt,
+          })),
         );
         setStudentRegistrations(allEvents);
         toast.success("Student found!", {
@@ -490,21 +497,35 @@ export function Dashboard() {
   };
 
   // Get unique event names and categories from all registrations for filter dropdowns
-  const uniqueEvents = Array.from(new Set(
-    allRegistrations.flatMap((r: any) => (r.events || []).map((e: any) => e.eventName))
-  )).sort();
-  const uniqueCategories = Array.from(new Set(
-    allRegistrations.flatMap((r: any) => (r.events || []).map((e: any) => e.category))
-  )).filter(Boolean).sort();
+  const uniqueEvents = Array.from(
+    new Set(
+      allRegistrations.flatMap((r: any) =>
+        (r.events || []).map((e: any) => e.eventName),
+      ),
+    ),
+  ).sort();
+  const uniqueCategories = Array.from(
+    new Set(
+      allRegistrations.flatMap((r: any) =>
+        (r.events || []).map((e: any) => e.category),
+      ),
+    ),
+  )
+    .filter(Boolean)
+    .sort();
 
   // Filter registrations based on selected filters
   const filteredRegistrations = allRegistrations.filter((r: any) => {
     if (regCategoryFilter !== "All") {
-      const hasCategory = r.events?.some((e: any) => e.category === regCategoryFilter);
+      const hasCategory = r.events?.some(
+        (e: any) => e.category === regCategoryFilter,
+      );
       if (!hasCategory) return false;
     }
     if (regEventFilter !== "All") {
-      const hasEvent = r.events?.some((e: any) => e.eventName === regEventFilter);
+      const hasEvent = r.events?.some(
+        (e: any) => e.eventName === regEventFilter,
+      );
       if (!hasEvent) return false;
     }
     return true;
@@ -516,7 +537,18 @@ export function Dashboard() {
       toast.error("No registrations to export");
       return;
     }
-    const headers = ["Student Name", "Roll No", "Mobile No", "Token", "Type", "Events", "Categories", "Sub Events", "Group Members", "Date"];
+    const headers = [
+      "Student Name",
+      "Roll No",
+      "Mobile No",
+      "Token",
+      "Type",
+      "Events",
+      "Categories",
+      "Sub Events",
+      "Group Members",
+      "Date",
+    ];
     const rows = filteredRegistrations.map((r: any) => [
       r.studentName || "",
       r.rollNo || "",
@@ -525,20 +557,28 @@ export function Dashboard() {
       r.isGroup ? "Group" : "Single",
       (r.events || []).map((e: any) => e.eventName).join(", "),
       (r.events || []).map((e: any) => e.category).join(", "),
-      (r.events || []).map((e: any) => e.subEvent || "").filter(Boolean).join(", "),
+      (r.events || [])
+        .map((e: any) => e.subEvent || "")
+        .filter(Boolean)
+        .join(", "),
       (r.groupMembers || []).join(", "),
       r.processedAt ? new Date(r.processedAt).toLocaleDateString("en-IN") : "",
     ]);
-    
+
     // Create worksheet and workbook
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Registrations");
 
     // Generate valid Excel filename
-    const filterLabel = regEventFilter !== "All" ? `_${regEventFilter.replace(/\s+/g, "_")}` : (regCategoryFilter !== "All" ? `_${regCategoryFilter}` : "");
+    const filterLabel =
+      regEventFilter !== "All"
+        ? `_${regEventFilter.replace(/\s+/g, "_")}`
+        : regCategoryFilter !== "All"
+          ? `_${regCategoryFilter}`
+          : "";
     const fileName = `panache_registrations${filterLabel}.xlsx`;
-    
+
     // Trigger download
     XLSX.writeFile(wb, fileName);
     toast.success("Registrations exported to Excel!");
@@ -626,29 +666,36 @@ export function Dashboard() {
               const isAlreadyRegistered = studentRegistrations.some(
                 (r: any) => {
                   // Standard check for direct match
-                  if (r.eventName === event.name && r.category === activeCategory) return true;
-                  
+                  if (
+                    r.eventName === event.name &&
+                    r.category === activeCategory
+                  )
+                    return true;
+
                   // Special check for transition from 'ONLINE GAMING' + subEvent to individual event
                   if (
-                    activeCategory === 'gaming' && 
-                    r.eventName === 'ONLINE GAMING' && 
+                    activeCategory === "gaming" &&
+                    r.eventName === "ONLINE GAMING" &&
                     r.subEvent?.toUpperCase() === event.name.toUpperCase()
-                  ) return true;
+                  )
+                    return true;
 
                   return false;
-                }
+                },
               );
 
-              const isSelected = isAlreadyRegistered || selectedEvents.some(
-                (e) =>
-                  e.eventName === event.name && e.category === activeCategory,
-              );
+              const isSelected =
+                isAlreadyRegistered ||
+                selectedEvents.some(
+                  (e) =>
+                    e.eventName === event.name && e.category === activeCategory,
+                );
               const catColor = EVENT_CATEGORIES[activeCategory].color;
 
               return (
                 <div
                   key={event.name}
-                  className={`flex items-center justify-between p-4 border-2 transition-all ${isAlreadyRegistered ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:bg-white/5'}`}
+                  className={`flex items-center justify-between p-4 border-2 transition-all ${isAlreadyRegistered ? "cursor-not-allowed opacity-80" : "cursor-pointer hover:bg-white/5"}`}
                   style={{
                     borderColor: isSelected ? catColor : "#333",
                     backgroundColor: isSelected
@@ -728,7 +775,11 @@ export function Dashboard() {
                           }}
                           disabled={isAlreadyRegistered}
                         >
-                          {isAlreadyRegistered ? "Paid" : isSelected ? "Remove" : "Add"}
+                          {isAlreadyRegistered
+                            ? "Paid"
+                            : isSelected
+                              ? "Remove"
+                              : "Add"}
                         </button>
                       </div>
                     )}
@@ -998,7 +1049,8 @@ export function Dashboard() {
                                   {reg.eventName}
                                 </p>
                                 <p className="font-space text-[#888] text-[10px] uppercase">
-                                  {reg.category} {reg.subEvent ? `• ${reg.subEvent}` : ""}
+                                  {reg.category}{" "}
+                                  {reg.subEvent ? `• ${reg.subEvent}` : ""}
                                 </p>
                               </div>
                               <span className="font-anton text-[#00FFFF]">
@@ -1326,7 +1378,9 @@ export function Dashboard() {
                                     <Edit size={12} /> Edit
                                   </button>
                                   <button
-                                    onClick={() => handleDeleteStudent(s._id, s.fullName)}
+                                    onClick={() =>
+                                      handleDeleteStudent(s._id, s.fullName)
+                                    }
                                     className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1"
                                   >
                                     <Trash2 size={12} /> Delete
@@ -1337,29 +1391,31 @@ export function Dashboard() {
                                     className="font-space font-bold text-[10px] uppercase tracking-widest px-3 py-1.5 border-2 border-white/20 text-white/50 hover:border-[#CCFF00] hover:text-[#CCFF00] transition-colors flex items-center gap-1 disabled:opacity-50"
                                   >
                                     {resendingStudentId === s._id ? (
-                                      <Loader2 size={12} className="animate-spin" />
+                                      <Loader2
+                                        size={12}
+                                        className="animate-spin"
+                                      />
                                     ) : (
                                       <Mail size={12} />
                                     )}{" "}
                                     Email
                                   </button>
                                 </>
-                              ) : (
-                                s.registrations && s.registrations.length > 0 ? (
-                                  s.registrations.map((e: any, i: number) => (
-                                    <span
-                                      key={i}
-                                      className="font-space text-[10px] font-bold bg-[#050505] border border-[#CCFF00]/30 text-[#CCFF00] px-2 py-0.5 uppercase"
-                                    >
-                                      {e.eventName}
-                                      {e.subEvent ? ` (${e.subEvent})` : ""}
-                                    </span>
-                                  ))
-                                ) : (
-                                  <span className="font-space text-[10px] text-[#888] uppercase tracking-wider">
-                                    No Registrations
+                              ) : s.registrations &&
+                                s.registrations.length > 0 ? (
+                                s.registrations.map((e: any, i: number) => (
+                                  <span
+                                    key={i}
+                                    className="font-space text-[10px] font-bold bg-[#050505] border border-[#CCFF00]/30 text-[#CCFF00] px-2 py-0.5 uppercase"
+                                  >
+                                    {e.eventName}
+                                    {e.subEvent ? ` (${e.subEvent})` : ""}
                                   </span>
-                                )
+                                ))
+                              ) : (
+                                <span className="font-space text-[10px] text-[#888] uppercase tracking-wider">
+                                  No Registrations
+                                </span>
                               )}
                             </div>
                           </td>
@@ -1405,7 +1461,9 @@ export function Dashboard() {
                     >
                       <option value="All">All Categories</option>
                       {uniqueCategories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -1423,11 +1481,17 @@ export function Dashboard() {
                         .filter((ev) => {
                           if (regCategoryFilter === "All") return true;
                           return allRegistrations.some((r: any) =>
-                            r.events?.some((e: any) => e.eventName === ev && e.category === regCategoryFilter)
+                            r.events?.some(
+                              (e: any) =>
+                                e.eventName === ev &&
+                                e.category === regCategoryFilter,
+                            ),
                           );
                         })
                         .map((ev) => (
-                          <option key={ev} value={ev}>{ev}</option>
+                          <option key={ev} value={ev}>
+                            {ev}
+                          </option>
                         ))}
                     </select>
                   </div>
@@ -1452,11 +1516,15 @@ export function Dashboard() {
               {/* Count Info */}
               <div className="flex items-center justify-between mb-4">
                 <p className="font-space text-[#888] text-xs uppercase tracking-widest">
-                  Showing {filteredRegistrations.length} of {allRegistrations.length} registrations
+                  Showing {filteredRegistrations.length} of{" "}
+                  {allRegistrations.length} registrations
                 </p>
                 {(regCategoryFilter !== "All" || regEventFilter !== "All") && (
                   <button
-                    onClick={() => { setRegCategoryFilter("All"); setRegEventFilter("All"); }}
+                    onClick={() => {
+                      setRegCategoryFilter("All");
+                      setRegEventFilter("All");
+                    }}
                     className="font-space text-xs text-red-400 uppercase tracking-widest hover:text-red-300 transition-colors"
                   >
                     × Clear Filters
@@ -1471,7 +1539,10 @@ export function Dashboard() {
               >
                 {loadingRegistrations && (
                   <div className="absolute inset-0 bg-[#050505]/80 flex items-center justify-center z-10">
-                    <Loader2 className="animate-spin text-[#CCFF00]" size={48} />
+                    <Loader2
+                      className="animate-spin text-[#CCFF00]"
+                      size={48}
+                    />
                   </div>
                 )}
                 <div className="overflow-x-auto">
@@ -1513,11 +1584,14 @@ export function Dashboard() {
                             <div className="font-space font-bold text-white text-sm uppercase">
                               {r.studentName}
                             </div>
-                            {r.isGroup && r.groupMembers && r.groupMembers.length > 0 && (
-                              <div className="font-space text-[#aaa] text-xs mt-1">
-                                +{r.groupMembers.length} members: {r.groupMembers.join(", ")}
-                              </div>
-                            )}
+                            {r.isGroup &&
+                              r.groupMembers &&
+                              r.groupMembers.length > 0 && (
+                                <div className="font-space text-[#aaa] text-xs mt-1">
+                                  +{r.groupMembers.length} members:{" "}
+                                  {r.groupMembers.join(", ")}
+                                </div>
+                              )}
                           </td>
                           <td className="p-4 font-space text-[#aaa] text-sm uppercase">
                             {r.branch || "-"}
@@ -1551,30 +1625,36 @@ export function Dashboard() {
                           </td>
                           <td className="p-4 font-space text-[#888] text-xs leading-tight">
                             {r.processedAt
-                              ? new Date(r.processedAt).toLocaleDateString("en-IN")
+                              ? new Date(r.processedAt).toLocaleDateString(
+                                  "en-IN",
+                                )
                               : "-"}
                             <br />
                             <span className="opacity-60">
                               {r.processedAt
-                                ? new Date(r.processedAt).toLocaleTimeString([], {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  })
+                                ? new Date(r.processedAt).toLocaleTimeString(
+                                    [],
+                                    {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )
                                 : ""}
                             </span>
                           </td>
                         </tr>
                       ))}
-                      {filteredRegistrations.length === 0 && !loadingRegistrations && (
-                        <tr>
-                          <td
-                            colSpan={8}
-                            className="p-12 text-center font-space text-[#888] uppercase tracking-widest"
-                          >
-                            No registrations found
-                          </td>
-                        </tr>
-                      )}
+                      {filteredRegistrations.length === 0 &&
+                        !loadingRegistrations && (
+                          <tr>
+                            <td
+                              colSpan={8}
+                              className="p-12 text-center font-space text-[#888] uppercase tracking-widest"
+                            >
+                              No registrations found
+                            </td>
+                          </tr>
+                        )}
                     </tbody>
                   </table>
                 </div>
@@ -1795,7 +1875,6 @@ export function Dashboard() {
         </AnimatePresence>,
         document.body,
       )}
-
     </Layout>
   );
 }

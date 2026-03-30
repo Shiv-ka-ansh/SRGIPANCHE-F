@@ -474,17 +474,40 @@ export function Dashboard() {
                 <StatCard label="Total Registered" value={stats.processedStudents} color="#00FFFF" />
                 {user?.role === 'superadmin' && <StatCard label="Total Revenue" value={`₹${stats.totalRevenue}`} color="#FF00FF" />}
               </div>
-              {user?.role === 'superadmin' && stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
-                <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
-                  <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">Revenue by Category</h3>
-                  <div className="space-y-4">
-                    {Object.entries(stats.categoryBreakdown).map(([cat, amt]: [string, any]) => (
-                      <div key={cat} className="flex items-center justify-between border-b border-[#333] pb-3">
-                        <span className="font-space font-bold text-white text-sm uppercase tracking-wider">{cat}</span>
-                        <span className="font-anton text-xl text-[#CCFF00]">₹{amt}</span>
+              {user?.role === 'superadmin' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {stats.categoryBreakdown && Object.keys(stats.categoryBreakdown).length > 0 && (
+                    <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                      <h3 className="font-anton text-xl text-[#CCFF00] uppercase mb-6">Revenue by Category</h3>
+                      <div className="space-y-4">
+                        {Object.entries(stats.categoryBreakdown).map(([cat, amt]: [string, any]) => (
+                          <div key={cat} className="flex items-center justify-between border-b border-[#333] pb-3">
+                            <div className="flex items-center gap-3">
+                              <span className="font-space font-bold text-white text-sm uppercase tracking-wider">{cat}</span>
+                              <span className="font-space font-bold text-[10px] text-[#00FFFF] border border-[#00FFFF]/30 bg-[#00FFFF]/5 px-2 py-0.5 tracking-wider">
+                                {stats.categoryCounts?.[cat] || 0} REGS
+                              </span>
+                            </div>
+                            <span className="font-anton text-xl text-[#CCFF00]">₹{amt as string|number}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
+
+                  {stats.branchBreakdown && Object.keys(stats.branchBreakdown).length > 0 && (
+                    <div className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                      <h3 className="font-anton text-xl text-[#00FFFF] uppercase mb-6">Registrations by Branch</h3>
+                      <div className="space-y-4">
+                        {Object.entries(stats.branchBreakdown).map(([branch, count]: [string, any]) => (
+                          <div key={branch} className="flex items-center justify-between border-b border-[#333] pb-3">
+                            <span className="font-space font-bold text-white text-sm uppercase tracking-wider">{branch}</span>
+                            <span className="font-anton text-xl text-[#00FFFF]">{count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
