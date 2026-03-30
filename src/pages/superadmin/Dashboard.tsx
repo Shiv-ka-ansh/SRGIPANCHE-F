@@ -75,8 +75,9 @@ export function Dashboard() {
     category: 'All',
     subEvent: 'All',
     regType: 'All',
-    adminName: 'All',
+    eventName: 'All',
   });
+  const [exportType, setExportType] = useState<'raw' | 'full' | 'event-wise'>('raw');
   
   // Schedule
   const [scheduleEntries, setScheduleEntries] = useState<any[]>([]);
@@ -350,9 +351,9 @@ export function Dashboard() {
         noTotal: 'true',
       };
       if (exportFilters.category !== 'All') params.category = exportFilters.category;
+      if (exportFilters.eventName !== 'All') params.eventName = exportFilters.eventName;
       if (exportFilters.subEvent !== 'All') params.subEvent = exportFilters.subEvent;
       if (exportFilters.regType !== 'All') params.regType = exportFilters.regType;
-      if (exportFilters.adminName !== 'All') params.adminName = exportFilters.adminName;
 
       const res = await api.get(`/export/${type}`, {
         responseType: 'blob',
@@ -365,6 +366,7 @@ export function Dashboard() {
       const parts = [
         'panache',
         exportFilters.category !== 'All' ? exportFilters.category.toLowerCase() : null,
+        exportFilters.eventName !== 'All' ? exportFilters.eventName.toLowerCase().replace(/\s+/g, '-') : null,
         exportFilters.subEvent !== 'All' ? exportFilters.subEvent.toLowerCase().replace(/\s+/g, '-') : null,
         exportFilters.regType !== 'All' ? exportFilters.regType : null,
       ].filter(Boolean);
@@ -791,7 +793,7 @@ export function Dashboard() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-[#050505] border-b-4 border-[#333]">
-                        {['S.No.', 'Token No.', 'Student/Team Leader', 'Roll No', 'Mobile No.', 'Branch', 'Type', 'Events', 'Total', 'Processed By', 'Date', 'Actions'].map(h => (
+                        {['S.No.', 'Token No.', 'Student/Team Leader', 'Roll No', 'Mobile No.', 'Branch', 'Type', 'Events', 'Total', 'Date', 'Actions'].map(h => (
                           <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
@@ -824,7 +826,7 @@ export function Dashboard() {
                             {r.events.map((e: any) => e.eventName).join(', ')}
                           </td>
                           <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{r.totalAmount}</td>
-                          <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td>
+                          {/* <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td> */}
                           <td className="p-4 font-space text-[#888] text-xs leading-tight">
                             {new Date(r.processedAt).toLocaleDateString()}<br/>
                             <span className="opacity-60">{new Date(r.processedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -1044,193 +1046,166 @@ export function Dashboard() {
 
           {/* ==== EXPORT ==== */}
           {!loading && activeTab === 'export' && (
-            <div className="space-y-8">
-              {/* Full Registration Report */}
-              <div
-                className="border border-[#CCFF00]/30 rounded-xl p-6 cursor-pointer hover:border-[#CCFF00] transition-all mb-8"
-                onClick={async () => {
-                  try {
-                    toast.loading('Generating full report...');
-                    const res = await api.get('/export/full-report', {
-                      responseType: 'blob',
-                      params: { format: 'excel' },
-                    });
-                    const url = window.URL.createObjectURL(new Blob([res.data]));
-                    const a = document.createElement('a');
-                    const today = new Date().toISOString().split('T')[0];
-                    a.href = url;
-                    a.download = `Panache-Registration-Report-${today}.xlsx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    toast.dismiss();
-                    toast.success('Full report downloaded!');
-                  } catch {
-                    toast.dismiss();
-                    toast.error('Export failed');
-                  }
-                }}
-              >
-                <h3 className="font-anton text-2xl text-[#CCFF00] uppercase mb-2">
-                  Full Registration Report
-                </h3>
-                <p className="font-space text-sm text-[#888]">
-                  5-sheet Excel: Summary · Category-wise · Event-wise · Student Details · Group Registrations
-                </p>
-                <p className="font-space text-xs text-[#555] mt-2">
-                  Token ID · Branch · Year · Mobile · Email · Processed By — all in one file. No pricing data.
-                </p>
+            <div className="space-y-8 animate-in fade-in duration-500">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <h2 className="font-anton text-4xl text-white uppercase tracking-tight">Export <span className="text-[#CCFF00]">Center</span></h2>
+                <div className="flex bg-[#121212] border-2 border-[#333] p-1">
+                  {(['raw', 'full', 'event-wise'] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setExportType(type)}
+                      className={`font-space font-bold text-[10px] uppercase tracking-widest px-4 py-2 transition-all ${
+                        exportType === type
+                          ? 'bg-[#CCFF00] text-[#050505]'
+                          : 'text-[#888] hover:text-white'
+                      }`}
+                    >
+                      {type === 'raw' ? 'Custom Filtered' : type === 'full' ? 'Full Report' : 'Event-Wise'}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              <h2 className="font-anton text-3xl text-white uppercase">Export Data</h2>
-
-              {/* Event-wise Participant List — Primary Export */}
-              <div className="bg-[#121212] border-4 border-[#FF00FF] p-6 mb-4" style={{ boxShadow: '8px 8px 0px #FF00FF' }}>
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-anton text-2xl text-[#FF00FF] uppercase mb-1">
-                      Event-wise Participant List
+              <div className="bg-[#121212] border-4 border-[#333] p-8 relative overflow-hidden" style={{ boxShadow: '12px 12px 0px #333' }}>
+                {/* Background Accent */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#CCFF00]/5 rounded-bl-full -mr-16 -mt-16 blur-2xl" />
+                
+                <div className="relative z-10 space-y-8">
+                  {/* Report Description */}
+                  <div className="border-l-4 border-[#CCFF00] pl-6 py-2">
+                    <h3 className="font-anton text-2xl text-white uppercase mb-2">
+                      {exportType === 'raw' && "Custom Filtered Data"}
+                      {exportType === 'full' && "Full Registration Report"}
+                      {exportType === 'event-wise' && "Event-wise Participant List"}
                     </h3>
-                    <p className="font-space text-[#888] text-xs uppercase tracking-widest">
-                      Single file • All events • Registered participants per event • Grouped by category
+                    <p className="font-space text-sm text-[#888] max-w-2xl leading-relaxed">
+                      {exportType === 'raw' && "Export raw registration data with custom filters. Best for specific analysis or importing into other tools."}
+                      {exportType === 'full' && "A comprehensive 5-sheet Excel workbook containing Summary, Category-wise, Event-wise, Student Details, and Group Registrations. (Excel Only)"}
+                      {exportType === 'event-wise' && "A grouped list of all registered participants, sorted by category and event. Perfect for on-ground event management."}
                     </p>
                   </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleExportEventWise('excel')}
-                      className="bg-[#FF00FF] text-white font-anton text-lg uppercase px-6 py-3 border-4 border-white hover:bg-[#CCFF00] hover:text-[#050505] hover:border-[#050505] transition-all flex items-center gap-2"
-                    >
-                      <FileDown size={20} /> Excel
-                    </button>
-                    <button
-                      onClick={() => handleExportEventWise('csv')}
-                      className="bg-transparent text-[#FF00FF] font-anton text-lg uppercase px-6 py-3 border-4 border-[#FF00FF] hover:bg-[#FF00FF] hover:text-white transition-all flex items-center gap-2"
-                    >
-                      <FileDown size={20} /> CSV
-                    </button>
-                  </div>
-                </div>
-              </div>
 
-              {/* Divider */}
-              <div className="flex items-center gap-4 my-2">
-                <div className="flex-1 border-t-2 border-[#333]" />
-                <span className="font-space text-xs text-[#555] uppercase tracking-widest">or export raw data with filters below</span>
-                <div className="flex-1 border-t-2 border-[#333]" />
-              </div>
+                  {/* Filters (Only for Raw Data) */}
+                  {exportType === 'raw' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-[#050505] border-2 border-[#333]">
+                      <div>
+                        <label className="block font-space font-bold text-[10px] text-[#555] uppercase tracking-[0.2em] mb-3">Event Category</label>
+                        <select
+                          value={exportFilters.category}
+                          onChange={(e) => setExportFilters({ ...exportFilters, category: e.target.value, subEvent: 'All' })}
+                          className="w-full bg-[#121212] text-white border border-[#333] p-3 font-space uppercase text-xs outline-none focus:border-[#CCFF00] transition-colors"
+                        >
+                          {['All', 'General', 'Technical', 'Cultural', 'Cyber'].map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
 
-              {/* Filter Panel */}
-              <div className="bg-[#121212] border-4 border-[#333] p-6 space-y-6" style={{ boxShadow: '8px 8px 0px #333' }}>
-                <p className="font-space font-bold text-xs text-[#888] uppercase tracking-widest">Apply Filters Before Export</p>
+                      <div>
+                        <label className="block font-space font-bold text-[10px] text-[#555] uppercase tracking-[0.2em] mb-3">Sub Event</label>
+                        <select
+                          value={exportFilters.subEvent}
+                          onChange={(e) => setExportFilters({ ...exportFilters, subEvent: e.target.value })}
+                          className="w-full bg-[#121212] text-white border border-[#333] p-3 font-space uppercase text-xs outline-none focus:border-[#CCFF00] transition-colors"
+                          disabled={exportSubEventOptions.length <= 1}
+                        >
+                          {exportSubEventOptions.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Category */}
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Event Category</label>
-                    <select
-                      value={exportFilters.category}
-                      onChange={(e) => setExportFilters({ ...exportFilters, category: e.target.value, subEvent: 'All' })}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
-                    >
-                      {['All', 'General', 'Technical', 'Cultural', 'Cyber'].map(c => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
-                    </select>
-                  </div>
+                      <div>
+                        <label className="block font-space font-bold text-[10px] text-[#555] uppercase tracking-[0.2em] mb-3">Reg Type</label>
+                        <select
+                          value={exportFilters.regType}
+                          onChange={(e) => setExportFilters({ ...exportFilters, regType: e.target.value })}
+                          className="w-full bg-[#121212] text-white border border-[#333] p-3 font-space uppercase text-xs outline-none focus:border-[#CCFF00] transition-colors"
+                        >
+                          <option value="All">All Types</option>
+                          <option value="single">Single</option>
+                          <option value="group">Group</option>
+                        </select>
+                      </div>
 
-                  {/* Sub Event */}
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Sub Event</label>
-                    <select
-                      value={exportFilters.subEvent}
-                      onChange={(e) => setExportFilters({ ...exportFilters, subEvent: e.target.value })}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
-                      disabled={exportSubEventOptions.length <= 1}
-                    >
-                      {exportSubEventOptions.map(s => (
-                        <option key={s} value={s}>{s}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Registration Type */}
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Registration Type</label>
-                    <select
-                      value={exportFilters.regType}
-                      onChange={(e) => setExportFilters({ ...exportFilters, regType: e.target.value })}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
-                    >
-                      <option value="All">All</option>
-                      <option value="single">Single</option>
-                      <option value="group">Group</option>
-                    </select>
-                  </div>
-
-                  {/* Admin */}
-                  <div>
-                    <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">Processed By Admin</label>
-                    <select
-                      value={exportFilters.adminName}
-                      onChange={(e) => setExportFilters({ ...exportFilters, adminName: e.target.value })}
-                      className="w-full bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
-                    >
-                      {exportAdminOptions.map(n => (
-                        <option key={n} value={n}>{n}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Active Filters Display */}
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-[#333]">
-                  <span className="font-space text-xs text-[#888] uppercase tracking-widest self-center">Active:</span>
-                  {Object.entries(exportFilters).map(([key, val]) =>
-                    val !== 'All' ? (
-                      <span key={key} className="font-space text-xs font-bold uppercase bg-[#CCFF00]/10 border border-[#CCFF00] text-[#CCFF00] px-2 py-1 tracking-widest">
-                        {key}: {val}
-                        <button
-                          onClick={() => setExportFilters({ ...exportFilters, [key]: 'All' })}
-                          className="ml-2 hover:text-white"
-                        >×</button>
-                      </span>
-                    ) : null
+                      <div>
+                        <label className="block font-space font-bold text-[10px] text-[#555] uppercase tracking-[0.2em] mb-3">Event Name</label>
+                        <select
+                          value={exportFilters.eventName}
+                          onChange={(e) => setExportFilters({ ...exportFilters, eventName: e.target.value })}
+                          className="w-full bg-[#121212] text-white border border-[#333] p-3 font-space uppercase text-xs outline-none focus:border-[#CCFF00] transition-colors"
+                        >
+                          <option value="All">All Events</option>
+                          {eventsList
+                            .filter(ev => exportFilters.category === 'All' || ev.category?.toLowerCase() === exportFilters.category.toLowerCase())
+                            .map(ev => (
+                              <option key={ev._id} value={ev.name}>{ev.name}</option>
+                            ))
+                          }
+                        </select>
+                      </div>
+                    </div>
                   )}
-                  {Object.values(exportFilters).every(v => v === 'All') && (
-                    <span className="font-space text-xs text-[#555] uppercase">None — exporting all records</span>
+
+                  {/* Actions */}
+                  <div className="flex flex-col sm:flex-row gap-6 pt-4">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={async () => {
+                        if (exportType === 'full') {
+                          try {
+                            const loadId = toast.loading('Generating full report...');
+                            const res = await api.get('/export/full-report', { responseType: 'blob', params: { format: 'excel' } });
+                            const url = window.URL.createObjectURL(new Blob([res.data]));
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `Panache-Full-Report-${new Date().toISOString().split('T')[0]}.xlsx`;
+                            a.click();
+                            toast.dismiss(loadId);
+                            toast.success('Full report downloaded!');
+                          } catch { toast.dismiss(); toast.error('Export failed'); }
+                        } else if (exportType === 'event-wise') {
+                          handleExportEventWise('excel');
+                        } else {
+                          handleExport('excel');
+                        }
+                      }}
+                      className="flex-1 bg-[#CCFF00] text-[#050505] font-anton text-xl uppercase py-5 border-4 border-[#050505] shadow-[6px_6px_0px_#050505] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all flex items-center justify-center gap-3"
+                    >
+                      <FileDown size={24} /> Download Excel
+                    </motion.button>
+                    
+                    {exportType !== 'full' && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => exportType === 'event-wise' ? handleExportEventWise('csv') : handleExport('csv')}
+                        className="flex-1 bg-transparent text-[#CCFF00] font-anton text-xl uppercase py-5 border-4 border-[#CCFF00] shadow-[6px_6px_0px_#CCFF00] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all flex items-center justify-center gap-3"
+                      >
+                        <FileDown size={24} /> Download CSV
+                      </motion.button>
+                    )}
+                  </div>
+
+                  {exportType === 'raw' && !Object.values(exportFilters).every(v => v === 'All') && (
+                    <div className="flex flex-wrap gap-2 animate-in slide-in-from-bottom-2 duration-300">
+                      <span className="font-space text-[10px] text-[#555] uppercase tracking-widest self-center">Active Filters:</span>
+                      {Object.entries(exportFilters).map(([key, val]) =>
+                        val !== 'All' ? (
+                          <span key={key} className="font-space text-[10px] font-bold uppercase bg-[#CCFF00]/5 border border-[#CCFF00]/30 text-[#CCFF00] px-3 py-1 tracking-widest flex items-center gap-2">
+                            {key}: {val}
+                            <button onClick={() => setExportFilters({ ...exportFilters, [key]: 'All' })} className="hover:text-white transition-colors">×</button>
+                          </span>
+                        ) : null
+                      )}
+                    </div>
                   )}
+
+                  <p className="font-space text-[9px] text-[#444] uppercase tracking-[0.3em] text-center pt-4 border-t border-[#333]/30">
+                    System Generation Timestamp: {new Date().toLocaleString('en-IN')} • Secure Export Portal
+                  </p>
                 </div>
-
-                <p className="font-space text-[10px] text-[#555] uppercase tracking-widest">
-                  Note: Export will NOT include a total row at the bottom.
-                </p>
-              </div>
-
-              {/* Export Buttons */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-[#121212] border-4 border-[#CCFF00] p-8 text-center cursor-pointer hover:translate-y-[-4px] transition-all"
-                  style={{ boxShadow: '8px 8px 0px #CCFF00' }}
-                  onClick={() => handleExport('csv')}
-                >
-                  <FileDown size={48} className="text-[#CCFF00] mx-auto mb-4" />
-                  <h3 className="font-anton text-2xl text-[#CCFF00] uppercase mb-2">Export CSV</h3>
-                  <p className="font-space text-[#888] text-sm uppercase tracking-wider">Download filtered registrations as CSV</p>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="bg-[#121212] border-4 border-[#00FFFF] p-8 text-center cursor-pointer hover:translate-y-[-4px] transition-all"
-                  style={{ boxShadow: '8px 8px 0px #00FFFF' }}
-                  onClick={() => handleExport('excel')}
-                >
-                  <FileDown size={48} className="text-[#00FFFF] mx-auto mb-4" />
-                  <h3 className="font-anton text-2xl text-[#00FFFF] uppercase mb-2">Export Excel</h3>
-                  <p className="font-space text-[#888] text-sm uppercase tracking-wider">Download formatted Excel spreadsheet</p>
-                </motion.div>
               </div>
             </div>
           )}
