@@ -6,6 +6,7 @@
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './lib/auth';
 import { AnimatedRoutes } from './components/AnimatedRoutes';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Router>
         <AnimatedRoutes />
       </Router>
+      <Analytics />
     </AuthProvider>
   );
 }
