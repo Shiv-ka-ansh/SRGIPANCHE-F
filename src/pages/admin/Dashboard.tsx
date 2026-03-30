@@ -249,11 +249,6 @@ export function Dashboard() {
         const newMember = data.student;
         if (groupMembersList.some((m) => m._id === newMember._id)) {
           toast.error("Student is already in the team");
-        } else if (newMember.status === "processed") {
-          toast.error(
-            "This student is already processed/registered elsewhere",
-            { style: { background: "red", color: "white" } },
-          );
         } else {
           setGroupMembersList([
             ...groupMembersList,
@@ -539,7 +534,7 @@ export function Dashboard() {
     }
     const headers = [
       "Student Name",
-      "Roll No",
+      // "Roll No",
       "Mobile No",
       "Token",
       "Type",
@@ -547,11 +542,12 @@ export function Dashboard() {
       "Categories",
       "Sub Events",
       "Group Members",
+      // "Total Amount",
       "Date",
     ];
     const rows = filteredRegistrations.map((r: any) => [
       r.studentName || "",
-      r.rollNo || "",
+      // r.rollNo || "",
       r.mobileNo || "",
       r.token || "",
       r.isGroup ? "Group" : "Single",
@@ -562,6 +558,7 @@ export function Dashboard() {
         .filter(Boolean)
         .join(", "),
       (r.groupMembers || []).join(", "),
+      // r.totalAmount || 0,
       r.processedAt ? new Date(r.processedAt).toLocaleDateString("en-IN") : "",
     ]);
 
@@ -1555,6 +1552,7 @@ export function Dashboard() {
                           "Student / Team Leader",
                           "Branch",
                           "Type",
+                          "Amount",
                           "Events",
                           "Processed By",
                           "Date",
@@ -1606,6 +1604,9 @@ export function Dashboard() {
                                 Single
                               </span>
                             )}
+                          </td>
+                          <td className="p-4 font-anton text-[#CCFF00] text-sm">
+                            ₹{r.totalAmount || 0}
                           </td>
                           <td className="p-4">
                             <div className="flex flex-wrap gap-1">

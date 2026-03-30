@@ -137,6 +137,47 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Credits Section */}
+        <div className="mb-20 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-24 border-t border-border/30 pt-16">
+          <div className="text-center group">
+            <p className="text-[10px] tracking-[0.5em] text-text-muted mb-3 font-bold uppercase opacity-60">
+              Designed By
+            </p>
+            <a
+              href="https://www.instagram.com/varun_pironiya"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-display text-3xl md:text-4xl text-white hover:text-accent transition-all duration-500 flex items-center gap-3"
+            >
+              VARUN PIRONIYA
+              <ArrowUpRight
+                size={24}
+                className="opacity-0 -translate-y-2 translate-x-2 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-500"
+              />
+            </a>
+          </div>
+
+          <div className="w-12 h-px md:w-px md:h-16 bg-gradient-to-b from-transparent via-border to-transparent opacity-20"></div>
+
+          <div className="text-center group">
+            <p className="text-[10px] tracking-[0.5em] text-text-muted mb-3 font-bold uppercase opacity-60">
+              Developed By
+            </p>
+            <a
+              href="https://www.instagram.com/shiv_.ka_ansh/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-display text-3xl md:text-4xl text-white hover:text-primary transition-all duration-500 flex items-center gap-3"
+            >
+              SHIVANSH GUPTA
+              <ArrowUpRight
+                size={24}
+                className="opacity-0 -translate-y-2 translate-x-2 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-500"
+              />
+            </a>
+          </div>
+        </div>
+
         <div className="border-t-2 border-border pt-8 flex flex-col md:flex-row items-center justify-between gap-4 font-sans text-sm font-bold uppercase tracking-wider text-text-muted">
           <p>
             &copy; {new Date().getFullYear()} PANACHE 2K26. ALL RIGHTS RESERVED.

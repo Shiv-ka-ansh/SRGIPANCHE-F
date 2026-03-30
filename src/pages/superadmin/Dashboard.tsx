@@ -1045,6 +1045,43 @@ export function Dashboard() {
           {/* ==== EXPORT ==== */}
           {!loading && activeTab === 'export' && (
             <div className="space-y-8">
+              {/* Full Registration Report */}
+              <div
+                className="border border-[#CCFF00]/30 rounded-xl p-6 cursor-pointer hover:border-[#CCFF00] transition-all mb-8"
+                onClick={async () => {
+                  try {
+                    toast.loading('Generating full report...');
+                    const res = await api.get('/export/full-report', {
+                      responseType: 'blob',
+                      params: { format: 'excel' },
+                    });
+                    const url = window.URL.createObjectURL(new Blob([res.data]));
+                    const a = document.createElement('a');
+                    const today = new Date().toISOString().split('T')[0];
+                    a.href = url;
+                    a.download = `Panache-Registration-Report-${today}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    toast.dismiss();
+                    toast.success('Full report downloaded!');
+                  } catch {
+                    toast.dismiss();
+                    toast.error('Export failed');
+                  }
+                }}
+              >
+                <h3 className="font-anton text-2xl text-[#CCFF00] uppercase mb-2">
+                  Full Registration Report
+                </h3>
+                <p className="font-space text-sm text-[#888]">
+                  5-sheet Excel: Summary · Category-wise · Event-wise · Student Details · Group Registrations
+                </p>
+                <p className="font-space text-xs text-[#555] mt-2">
+                  Token ID · Branch · Year · Mobile · Email · Processed By — all in one file. No pricing data.
+                </p>
+              </div>
+
               <h2 className="font-anton text-3xl text-white uppercase">Export Data</h2>
 
               {/* Event-wise Participant List — Primary Export */}
