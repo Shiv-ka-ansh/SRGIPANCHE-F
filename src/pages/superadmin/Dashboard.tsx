@@ -1080,8 +1080,8 @@ export function Dashboard() {
                     </h3>
                     <p className="font-space text-sm text-[#888] max-w-2xl leading-relaxed">
                       {exportType === 'raw' && "Export raw registration data with custom filters. Best for specific analysis or importing into other tools."}
-                      {exportType === 'full' && "A comprehensive 5-sheet Excel workbook containing Summary, Category-wise, Event-wise, Student Details, and Group Registrations. (Excel Only)"}
-                      {exportType === 'event-wise' && "A grouped list of all registered participants, sorted by category and event. Perfect for on-ground event management."}
+                      {exportType === 'full' && "A comprehensive 5-sheet Excel workbook containing Summary, Category-wise, Event-wise (with Token IDs), Student Details, and Group Registrations. (Excel Only)"}
+                      {exportType === 'event-wise' && "A grouped list of all registered participants (including group members and token IDs), sorted by category and event. Perfect for on-ground event management."}
                     </p>
                   </div>
 
@@ -1155,7 +1155,7 @@ export function Dashboard() {
                       onClick={async () => {
                         if (exportType === 'full') {
                           try {
-                            const loadId = toast.loading('Generating full report...');
+                            const loadId = toast.loading('Generating full report with participant tokens...');
                             const res = await api.get('/export/full-report', { responseType: 'blob', params: { format: 'excel' } });
                             const url = window.URL.createObjectURL(new Blob([res.data]));
                             const a = document.createElement('a');
@@ -1163,7 +1163,7 @@ export function Dashboard() {
                             a.download = `Panache-Full-Report-${new Date().toISOString().split('T')[0]}.xlsx`;
                             a.click();
                             toast.dismiss(loadId);
-                            toast.success('Full report downloaded!');
+                            toast.success('✅ Full report downloaded! (Includes Token IDs)');
                           } catch { toast.dismiss(); toast.error('Export failed'); }
                         } else if (exportType === 'event-wise') {
                           handleExportEventWise('excel');
