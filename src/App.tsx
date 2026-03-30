@@ -13,8 +13,8 @@ export default function App() {
     <AuthProvider>
       <Router>
         <AnimatedRoutes />
+        <Analytics />
       </Router>
-      <Analytics />
     </AuthProvider>
   );
 }
