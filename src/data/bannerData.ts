@@ -81,7 +81,7 @@ export const bannerData: EventBannerData[] = [
     category: 'GENERAL',
     color: '#CCFF00',
     tagline: 'Luck Is The Only Skill You Need.',
-    fee: '₹25',
+    fee: '₹30',
     visualConcept: 'Lucky draw drum / spinning wheel with question marks. Stars and sparkles in #CCFF00. Lucky charm icons (dice, clover, coin).',
     nameStyle: 'SANYOG SE — playful, rounded bold',
     logo: 'PANACHE 2k26'
