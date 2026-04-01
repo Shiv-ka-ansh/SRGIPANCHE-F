@@ -436,13 +436,18 @@ export function Dashboard() {
   }, {});
 
   // Enhancement 3: Daily summary
-  const dailySummary: Record<string, { count: number; revenue: number }> = registrations.reduce((acc: any, r: any) => {
+  const dailySummary: Record<string, { count: number; revenue: number; admins: Record<string, number> }> = registrations.reduce((acc: any, r: any) => {
     const dateKey = r.processedAt
       ? new Date(r.processedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
       : 'Unknown';
-    if (!acc[dateKey]) acc[dateKey] = { count: 0, revenue: 0 };
+    if (!acc[dateKey]) acc[dateKey] = { count: 0, revenue: 0, admins: {} };
     acc[dateKey].count += 1;
     acc[dateKey].revenue += r.totalAmount || 0;
+    
+    const adminName = r.processedBy?.name || 'Unknown';
+    if (!acc[dateKey].admins[adminName]) acc[dateKey].admins[adminName] = 0;
+    acc[dateKey].admins[adminName] += r.totalAmount || 0;
+
     return acc;
   }, {});
   const sortedDailySummary = Object.entries(dailySummary).sort((a, b) => {
@@ -755,19 +760,30 @@ export function Dashboard() {
                           <th className="p-4 font-space font-bold text-xs text-[#888] uppercase tracking-widest">Date</th>
                           <th className="p-4 font-space font-bold text-xs text-[#888] uppercase tracking-widest">Registrations</th>
                           <th className="p-4 font-space font-bold text-xs text-[#888] uppercase tracking-widest">Revenue Collected</th>
+                          <th className="p-4 font-space font-bold text-xs text-[#888] uppercase tracking-widest">Admin Collection</th>
                         </tr>
                       </thead>
                       <tbody>
                         {sortedDailySummary.map(([date, data]) => (
                           <tr key={date} className="border-t border-[#222] hover:bg-white/5 transition-colors">
-                            <td className="p-4 font-space font-bold text-white text-sm">{date}</td>
-                            <td className="p-4 font-anton text-[#00FFFF] text-2xl">{data.count}</td>
-                            <td className="p-4 font-anton text-[#CCFF00] text-2xl">₹{data.revenue}</td>
+                            <td className="p-4 font-space font-bold text-white text-sm whitespace-nowrap align-top">{date}</td>
+                            <td className="p-4 font-anton text-[#00FFFF] text-2xl align-top">{data.count}</td>
+                            <td className="p-4 font-anton text-[#CCFF00] text-2xl align-top">₹{data.revenue}</td>
+                            <td className="p-4 align-top">
+                              <div className="flex flex-wrap gap-2">
+                                {Object.entries(data.admins).sort((a: any, b: any) => b[1] - a[1]).map(([admin, amount]: [string, any]) => (
+                                  <div key={admin} className="flex items-center gap-2 text-[10px] bg-[#050505] px-2 py-1 border border-[#333] hover:border-[#CCFF00] transition-colors whitespace-nowrap">
+                                    <span className="font-space text-[#888] uppercase">{admin}</span>
+                                    <span className="font-space font-bold text-[#CCFF00]">₹{amount as number}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
                           </tr>
                         ))}
                         {sortedDailySummary.length === 0 && (
                           <tr>
-                            <td colSpan={3} className="p-8 text-center font-space text-[#888] uppercase tracking-widest">
+                            <td colSpan={4} className="p-8 text-center font-space text-[#888] uppercase tracking-widest">
                               No registrations yet
                             </td>
                           </tr>
