@@ -13,6 +13,7 @@ const allEvents = Object.entries(EVENT_CATEGORIES).flatMap(([key, cat]) =>
     id: `${key}-${ev.name}`,
     name: ev.name,
     amount: ev.amount,
+    isTeam: ev.isTeam || false,
     category: cat.label,
     categoryKey: key,
     color: cat.color,
@@ -140,6 +141,11 @@ export function Events() {
                     >
                       {event.category}
                     </div>
+                    {event.isTeam && (
+                      <div className="absolute top-4 left-4 bg-[#FF00FF] text-white px-3 py-1 text-[10px] font-anton uppercase tracking-widest border-2 border-white transform -rotate-3 group-hover:rotate-0 transition-transform shadow-[2px_2px_0px_#fff]">
+                        TEAM EVENT
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-6 flex flex-col flex-grow">

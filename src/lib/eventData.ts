@@ -242,6 +242,7 @@ export const EVENT_CATEGORIES: Record<string, {
       { 
         name: 'RANGOLI', 
         amount: 50, 
+        isTeam: true,
         description: 'Not just colors, it’s a whole vibe! Rangoli is where creativity meets tradition, and the ground becomes your canvas to create something truly eye-catching.',
         rules: [
           'Participants will design vibrant rangoli based on the given theme.',
@@ -304,6 +305,7 @@ export const EVENT_CATEGORIES: Record<string, {
       { 
         name: 'SKY SCRAPPER', 
         amount: 50, 
+        isTeam: true,
         description: 'Build the tallest and strongest structure using limited industrial materials.',
         coordinators: [
           { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
@@ -314,6 +316,7 @@ export const EVENT_CATEGORIES: Record<string, {
       { 
         name: 'SOLID HAI BOSS', 
         amount: 100, 
+        isTeam: true,
         description: 'A high-level technical quiz testing your knowledge across engineering streams.',
         coordinators: [
           { name: 'AKASH RAYKWAR (HEAD)', branch: 'BTECH EE', year: '3RD', phone: '7880410256' },
@@ -502,6 +505,7 @@ export const EVENT_CATEGORIES: Record<string, {
       { 
         name: 'GUESS THE TECH', 
         amount: 50, 
+        isTeam: true,
         description: 'Identify tech brands, gadgets, and concepts from cryptic clues and logos.',
         coordinators: [
           { name: 'RASHID KHAN (HEAD)', branch: 'BTECH CS CORE', year: 'FINAL', phone: '7518553177' },

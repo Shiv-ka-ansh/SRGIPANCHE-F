@@ -65,7 +65,8 @@ export function Dashboard() {
     color: '#00FFFF',
     description: '',
     rulesText: '',
-    coordinatorsText: ''
+    coordinatorsText: '',
+    isTeam: false
   });
 
   // Registrations
@@ -76,8 +77,9 @@ export function Dashboard() {
   // Enhancement 1: Events category filter
   const [eventCategoryFilter, setEventCategoryFilter] = useState<string>('All');
 
-  // Enhancement 2: Registrations admin filter
+  // Enhancement 2: Registrations filter
   const [regAdminFilter, setRegAdminFilter] = useState<string>('All');
+  const [registrationSearchQuery, setRegistrationSearchQuery] = useState('');
 
   // Enhancement 3: Daily summary toggle
   const [showDailySummary, setShowDailySummary] = useState(false);
@@ -197,7 +199,8 @@ export function Dashboard() {
         color: '#00FFFF',
         description: '',
         rulesText: '',
-        coordinatorsText: ''
+        coordinatorsText: '',
+        isTeam: false
       });
       fetchEventsList();
     } catch { toast.error('Failed to save event'); }
@@ -426,9 +429,12 @@ export function Dashboard() {
   const adminOptions = ['All', ...Array.from(
     new Set(registrations.map((r: any) => r.processedBy?.name).filter(Boolean))
   )];
-  const filteredRegistrations = regAdminFilter === 'All'
-    ? registrations
-    : registrations.filter((r: any) => r.processedBy?.name === regAdminFilter);
+  const filteredRegistrations = registrations.filter((r: any) => {
+    const adminMatch = regAdminFilter === 'All' || r.processedBy?.name === regAdminFilter;
+    const searchMatch = !registrationSearchQuery || 
+      [r.studentName, r.rollNo, ...(r.groupMembers || [])].join(' ').toLowerCase().includes(registrationSearchQuery.toLowerCase());
+    return adminMatch && searchMatch;
+  });
   const adminPaymentSummary: Record<string, number> = registrations.reduce((acc: any, r: any) => {
     const name = r.processedBy?.name || 'Unknown';
     acc[name] = (acc[name] || 0) + (r.totalAmount || 0);
@@ -654,7 +660,8 @@ export function Dashboard() {
                       color: '#00FFFF',
                       description: '',
                       rulesText: '',
-                      coordinatorsText: ''
+                      coordinatorsText: '',
+                      isTeam: false
                     });
                     setIsEventModalOpen(true);
                   }}
@@ -689,7 +696,7 @@ export function Dashboard() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-[#050505] border-b-4 border-[#333]">
-                        {['Category', 'Event Name', 'Amount', 'Description', 'Sub Events', 'Color', 'Actions'].map(h => (
+                        {['Category', 'Event Name', 'Type', 'Amount', 'Description', 'Sub Events', 'Color', 'Actions'].map(h => (
                           <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest">{h}</th>
                         ))}
                       </tr>
@@ -699,6 +706,9 @@ export function Dashboard() {
                         <tr key={ev._id} className="border-b border-[#222] hover:bg-white/5 transition-colors">
                           <td className="p-4 font-space font-bold text-white text-sm uppercase">{ev.category}</td>
                           <td className="p-4 font-space font-bold text-white text-sm uppercase">{ev.name}</td>
+                          <td className="p-4 font-space text-[10px] uppercase font-bold text-white">
+                            {ev.isTeam ? <span className="bg-[#FF00FF] px-2 py-1">TEAM</span> : <span className="bg-[#00FFFF] text-black px-2 py-1">SINGLE</span>}
+                          </td>
                           <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{ev.amount}</td>
                           <td className="p-4 font-space text-[#aaa] text-[10px] uppercase line-clamp-2 max-w-xs">{ev.description || '-'}</td>
                           <td className="p-4 font-space text-[#aaa] text-xs uppercase">{ev.subEvents?.join(', ') || '-'}</td>
@@ -714,7 +724,8 @@ export function Dashboard() {
                                   subEvents: ev.subEvents?.join(', ') || '',
                                   rulesText: ev.rules?.join('\n') || '',
                                   coordinatorsText: ev.coordinators?.map((c: any) => `${c.name}:${c.phone}`).join('\n') || '',
-                                  description: ev.description || ''
+                                  description: ev.description || '',
+                                  isTeam: ev.isTeam || false
                                 }); 
                                 setIsEventModalOpen(true);
                               }} className="p-2 border border-[#CCFF00] text-[#CCFF00] hover:bg-[#CCFF00] hover:text-[#050505] transition-colors">
@@ -794,6 +805,18 @@ export function Dashboard() {
                 )}
               </div>
 
+              {/* Search Bar */}
+              <div className="bg-[#121212] border-4 border-[#333] p-4 flex gap-4 items-center" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <Search className="text-[#888]" size={20} />
+                <input
+                  type="text"
+                  placeholder="SEARCH BY STUDENT NAME OR ROLL NO..."
+                  value={registrationSearchQuery}
+                  onChange={(e) => setRegistrationSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-white font-space font-bold uppercase tracking-widest outline-none placeholder:text-[#888]"
+                />
+              </div>
+
               {/* Admin Filter + Summary Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Filter Dropdown */}
@@ -860,7 +883,11 @@ export function Dashboard() {
                           <td className="p-4">
                             <div className="font-space font-bold text-white text-sm">{r.studentName}</div>
                             {r.isGroup && r.groupMembers && r.groupMembers.length > 0 && (
-                              <div className="font-space text-[#aaa] text-xs mt-1">+{r.groupMembers.length} members</div>
+                              <div className="font-space text-[#aaa] text-[10px] mt-1 space-y-0.5 border-l border-[#333] pl-2 uppercase">
+                                {r.groupMembers.map((member: string, i: number) => (
+                                  <div key={i}>• {member}</div>
+                                ))}
+                              </div>
                             )}
                           </td>
                           <td className="p-4 font-space text-[#aaa] text-sm">{r.rollNo}</td>
@@ -1608,6 +1635,19 @@ export function Dashboard() {
                     <label className={labelClass}>Event Color</label>
                     <div className="flex gap-2 items-center bg-[#050505] border-2 border-[#333] p-3">
                         <input type="color" value={eventForm.color} onChange={e => setEventForm({...eventForm, color: e.target.value})} className="w-full h-8 border-0 bg-transparent cursor-pointer" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Is Team Event?</label>
+                    <div className="flex items-center h-full pt-2">
+                       <label className="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" checked={eventForm.isTeam} onChange={e => setEventForm({...eventForm, isTeam: e.target.checked})} className="sr-only peer" />
+                          <div className="w-11 h-6 bg-[#333] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#CCFF00]"></div>
+                          <span className="ml-3 font-space text-sm font-bold text-white uppercase tracking-widest">{eventForm.isTeam ? 'YES' : 'NO'}</span>
+                       </label>
                     </div>
                   </div>
                 </div>
