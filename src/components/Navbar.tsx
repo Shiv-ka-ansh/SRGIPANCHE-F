@@ -23,7 +23,7 @@ export function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Events', path: '/events' },
-    // { name: 'Schedule', path: '/schedule' },
+    { name: 'Schedule', path: '/schedule' },
     { name: 'Team', path: '/team' },
     // { name: 'Gallery', path: '/gallery' },
     { name: 'Register', path: '/register' },

@@ -32,12 +32,12 @@ export function Team() {
         {
           name: "TANISH AGRAWAL",
           role: "PRESIDENT",
-          image: "/team/core/tanish-agrawal.png",
+          image: "/team/Tanish.jpeg",
         },
         {
           name: "PIYUSH MALVIYA",
           role: "VICE PRESIDENT",
-          image: "/team/core/piyush-malviya.png",
+          image: "/team/Piyush.jpg",
         },
       ],
     },

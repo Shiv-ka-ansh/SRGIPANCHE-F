@@ -50,7 +50,7 @@ export function Dashboard() {
   // Students
   const [students, setStudents] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [branchFilter, setBranchFilter] = useState('All');
+  const [courseFilter, setCourseFilter] = useState('All');
   const [editingStudent, setEditingStudent] = useState<any>(null);
 
   // Events
@@ -119,6 +119,10 @@ export function Dashboard() {
   });
 
   useEffect(() => {
+    if (activeTab === 'students') fetchStudents();
+  }, [courseFilter]);
+
+  useEffect(() => {
     if (activeTab === 'overview') fetchAnalytics();
     if (activeTab === 'students') fetchStudents();
     if (activeTab === 'events' || activeTab === 'registrations' || activeTab === 'export') fetchEventsList();
@@ -139,7 +143,7 @@ export function Dashboard() {
   const fetchStudents = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/students', { params: { search: searchQuery, branch: branchFilter }});
+      const { data } = await api.get('/students', { params: { search: searchQuery, course: courseFilter }});
       setStudents(data.students);
     } catch { toast.error('Failed to load students'); }
     setLoading(false);
@@ -583,15 +587,15 @@ export function Dashboard() {
                   </button>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-space font-bold uppercase text-[#888] text-xs">Branch:</span>
+                  <span className="font-space font-bold uppercase text-[#888] text-xs">Course:</span>
                   <select
-                    value={branchFilter}
-                    onChange={(e) => setBranchFilter(e.target.value)}
+                    value={courseFilter}
+                    onChange={(e) => setCourseFilter(e.target.value)}
                     className="bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
                   >
-                    <option value="All">All Branches</option>
-                    <option value="BTECH">B.Tech</option>
-                    <option value="POLYTECHNIC">Polytechnic</option>
+                    <option value="All">All Courses</option>
+                    <option value="B.Tech">B.Tech</option>
+                    <option value="Polytechnic">Polytechnic</option>
                   </select>
                 </div>
               </div>
@@ -822,7 +826,7 @@ export function Dashboard() {
                 {/* Filter Dropdown */}
                 <div className="bg-[#121212] border-4 border-[#333] p-4 md:col-span-1" style={{ boxShadow: '8px 8px 0px #333' }}>
                   <label className="block font-space font-bold text-xs text-[#888] uppercase tracking-widest mb-2">
-                    Filter by Admin
+                    Processed By
                   </label>
                   <select
                     value={regAdminFilter}
@@ -866,8 +870,8 @@ export function Dashboard() {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-[#050505] border-b-4 border-[#333]">
-                        {['S.No.', 'Token No.', 'Student/Team Leader', 'Roll No', 'Mobile No.', 'Branch', 'Type', 'Events', 'Total', 'Date', 'Actions'].map(h => (
-                          <th key={h} className="p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest whitespace-nowrap">{h}</th>
+                        {['S.No.', 'Token No.', 'Student/Team Leader', 'Roll No', 'Mobile No.', 'Branch', 'Type', 'Events', 'Total', 'Processed By', 'Date', 'Actions'].map(h => (
+                          <th key={h} className={`p-4 font-space font-bold text-xs text-[#CCFF00] uppercase tracking-widest whitespace-nowrap ${(h === 'Roll No' || h === 'Mobile No.') ? 'text-center' : ''}`}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -890,8 +894,8 @@ export function Dashboard() {
                               </div>
                             )}
                           </td>
-                          <td className="p-4 font-space text-[#aaa] text-sm">{r.rollNo}</td>
-                          <td className="p-4 font-space text-[#aaa] text-sm">{r.mobileNo || "-"}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm text-center whitespace-nowrap">{r.rollNo}</td>
+                          <td className="p-4 font-space text-[#aaa] text-sm text-center whitespace-nowrap">{r.mobileNo || "-"}</td>
                           <td className="p-4 font-space text-[#aaa] text-sm uppercase">{r.branch || "-"}</td>
                           <td className="p-4">
                               {r.isGroup 
@@ -903,7 +907,7 @@ export function Dashboard() {
                             {r.events.map((e: any) => e.eventName).join(', ')}
                           </td>
                           <td className="p-4 font-anton text-[#CCFF00] text-lg">₹{r.totalAmount}</td>
-                          {/* <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td> */}
+                          <td className="p-4 font-space text-[#aaa] text-sm">{r.processedBy?.name || 'N/A'}</td>
                           <td className="p-4 font-space text-[#888] text-xs leading-tight">
                             {new Date(r.processedAt).toLocaleDateString()}<br/>
                             <span className="opacity-60">{new Date(r.processedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

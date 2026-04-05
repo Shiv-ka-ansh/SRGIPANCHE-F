@@ -105,7 +105,7 @@ export function Dashboard() {
   // All Students States
   const [allStudents, setAllStudents] = useState<StudentData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [branchFilter, setBranchFilter] = useState("All");
+  const [courseFilter, setCourseFilter] = useState("All");
   const [loadingStudents, setLoadingStudents] = useState(false);
   const [bulkResending, setBulkResending] = useState(false);
   const [resendingStudentId, setResendingStudentId] = useState<string | null>(
@@ -120,6 +120,7 @@ export function Dashboard() {
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
   const [regEventFilter, setRegEventFilter] = useState("All");
   const [regCategoryFilter, setRegCategoryFilter] = useState("All");
+  const [registrationSearchQuery, setRegistrationSearchQuery] = useState("");
 
   // Analytics Stats
   const [stats, setStats] = useState<any>(null);
@@ -141,6 +142,12 @@ export function Dashboard() {
     message: "",
     onConfirm: () => {},
   });
+
+  useEffect(() => {
+    if (activeTab === "students") {
+      fetchStudents();
+    }
+  }, [courseFilter]);
 
   useEffect(() => {
     if (activeTab === "students") {
@@ -172,7 +179,7 @@ export function Dashboard() {
     setLoadingStudents(true);
     try {
       const { data } = await api.get("/students", {
-        params: { search: searchQuery, branch: branchFilter },
+        params: { search: searchQuery, course: courseFilter },
       });
       if (data.success) {
         setAllStudents(data.students);
@@ -548,6 +555,13 @@ export function Dashboard() {
         (e: any) => e.eventName === regEventFilter,
       );
       if (!hasEvent) return false;
+    }
+    if (registrationSearchQuery) {
+      const searchMatch = [r.studentName, r.rollNo, r.token, ...(r.groupMembers || [])]
+        .join(' ')
+        .toLowerCase()
+        .includes(registrationSearchQuery.toLowerCase());
+      if (!searchMatch) return false;
     }
     return true;
   });
@@ -1361,6 +1375,7 @@ export function Dashboard() {
                       placeholder="Search Name, Roll No..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && fetchStudents()}
                       className="w-full bg-[#050505] border-2 border-[#333] py-3 pl-12 pr-4 text-white font-space uppercase text-sm focus:border-[#CCFF00] outline-none"
                     />
                   </div>
@@ -1385,16 +1400,16 @@ export function Dashboard() {
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="font-space font-bold uppercase text-[#888] text-xs">
-                    Branch:
+                    Course:
                   </span>
                   <select
-                    value={branchFilter}
-                    onChange={(e) => setBranchFilter(e.target.value)}
+                    value={courseFilter}
+                    onChange={(e) => setCourseFilter(e.target.value)}
                     className="bg-[#050505] text-white border-2 border-[#333] p-3 font-space uppercase text-sm outline-none focus:border-[#CCFF00]"
                   >
-                    <option value="All">All Branches</option>
-                    <option value="BTECH">B.Tech</option>
-                    <option value="POLYTECHNIC">Polytechnic</option>
+                    <option value="All">All Courses</option>
+                    <option value="B.Tech">B.Tech</option>
+                    <option value="Polytechnic">Polytechnic</option>
                   </select>
                 </div>
               </div>
@@ -1547,6 +1562,18 @@ export function Dashboard() {
           {/* ==== REGISTRATIONS TAB ==== */}
           {activeTab === "registrations" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              {/* Search Bar */}
+              <div className="bg-[#121212] border-4 border-[#333] p-4 flex gap-4 items-center mb-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+                <Search className="text-[#888]" size={20} />
+                <input
+                  type="text"
+                  placeholder="SEARCH BY STUDENT NAME OR ROLL NO OR TOKEN..."
+                  value={registrationSearchQuery}
+                  onChange={(e) => setRegistrationSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-white font-space font-bold uppercase tracking-widest outline-none placeholder:text-[#888]"
+                />
+              </div>
+
               {/* Filters Bar */}
               <div
                 className="bg-[#121212] border-4 border-[#333] p-6 mb-8 flex flex-col md:flex-row gap-4 justify-between items-end"

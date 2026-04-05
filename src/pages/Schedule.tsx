@@ -130,7 +130,7 @@ export function Schedule() {
               transition={{ delay: 0.1 }}
               className="text-[#888] font-space text-xl max-w-2xl mx-auto uppercase tracking-widest"
             >
-              PLAN YOUR FESTIVAL EXPERIENCE. THREE DAYS OF NON-STOP ACTION.
+              PLAN YOUR FESTIVAL EXPERIENCE. FIVE DAYS OF NON-STOP ACTION.
             </motion.p>
           </div>
 
