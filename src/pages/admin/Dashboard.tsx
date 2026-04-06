@@ -30,6 +30,8 @@ import api from "../../lib/api";
 import { EVENT_CATEGORIES } from "../../lib/eventData";
 import toast, { Toaster } from "react-hot-toast";
 import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 interface StudentData {
   _id: string;
@@ -75,9 +77,11 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<
     "overview" | "single" | "group" | "students" | "registrations"
   >(
-    (user?.role === "superadmin" || user?.allowedTabs?.includes("overview"))
+    user?.role === "superadmin" || user?.allowedTabs?.includes("overview")
       ? "overview"
-      : (user?.allowedTabs?.find((t) => ["single", "group", "students", "registrations"].includes(t)) as any) || "single"
+      : (user?.allowedTabs?.find((t) =>
+          ["single", "group", "students", "registrations"].includes(t),
+        ) as any) || "single",
   );
 
   // Universal Event Selection States
@@ -557,8 +561,13 @@ export function Dashboard() {
       if (!hasEvent) return false;
     }
     if (registrationSearchQuery) {
-      const searchMatch = [r.studentName, r.rollNo, r.token, ...(r.groupMembers || [])]
-        .join(' ')
+      const searchMatch = [
+        r.studentName,
+        r.rollNo,
+        r.token,
+        ...(r.groupMembers || []),
+      ]
+        .join(" ")
         .toLowerCase()
         .includes(registrationSearchQuery.toLowerCase());
       if (!searchMatch) return false;
@@ -619,6 +628,137 @@ export function Dashboard() {
     // Trigger download
     XLSX.writeFile(wb, fileName);
     toast.success("Registrations exported to Excel!");
+  };
+
+  // Export PARTICIPANTS LIST as PDF (matching the PARTICIPANTS - Sheet1.pdf format)
+  const handleExportParticipantsPDF = () => {
+    if (filteredRegistrations.length === 0) {
+      toast.error("No registrations to export");
+      return;
+    }
+
+    // Build flat rows — one row per participant (group members expanded)
+    const tableRows: (string | number)[][] = [];
+    let srNo = 1;
+
+    filteredRegistrations.forEach((r: any) => {
+      const type = r.isGroup ? "Group" : "Solo";
+      
+      // Leader row
+      tableRows.push([
+        srNo++,
+        r.token || "-",
+        r.studentName || "-",
+        r.branch || "-",
+      ]);
+
+      // Team member rows
+      if (r.isGroup && r.groupMembers && r.groupMembers.length > 0) {
+        r.groupMembers.forEach((memberName: string) => {
+          tableRows.push([
+            srNo++,
+            r.token || "-",
+            memberName,
+            r.branch || "-",
+          ]);
+        });
+      }
+    });
+
+    // Build filter label for title
+    const filterLabel =
+      regEventFilter !== "All"
+        ? ` — ${regEventFilter}`
+        : regCategoryFilter !== "All"
+          ? ` — ${regCategoryFilter}`
+          : "";
+
+    // === jsPDF Setup ===
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    const now = new Date();
+    const exportDate = now.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+
+    // --- Header Block ---
+    doc.setFillColor(204, 255, 0); // #CCFF00 lime
+    doc.rect(margin, 10, pageWidth - margin * 2, 1.5, "F");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(20, 20, 20);
+    doc.text("SRGI PANACHE 2025", pageWidth / 2, 18, { align: "center" });
+
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    doc.text(`PARTICIPANTS LIST${filterLabel}`, pageWidth / 2, 24, {
+      align: "center",
+    });
+
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Exported: ${exportDate}`, margin, 30);
+    doc.text(
+      `Total Participants: ${tableRows.length}`,
+      pageWidth - margin,
+      30,
+      { align: "right" },
+    );
+
+    doc.setFillColor(204, 255, 0);
+    doc.rect(margin, 32, pageWidth - margin * 2, 0.5, "F");
+
+    // --- Table ---
+    autoTable(doc, {
+      startY: 35,
+      margin: { left: margin, right: margin },
+      head: [["S.No.", "Token", "Participant Name", "Branch"]],
+      body: tableRows,
+      styles: {
+        font: "helvetica",
+        fontSize: 8,
+        cellPadding: 2,
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fillColor: [20, 20, 20],
+        textColor: [204, 255, 0],
+        fontStyle: "bold",
+        halign: "center",
+      },
+      columnStyles: {
+        0: { halign: "center", cellWidth: 15 },
+        1: { halign: "center", cellWidth: 25 },
+        2: { cellWidth: "auto" },
+        3: { cellWidth: 40 },
+      },
+      didDrawPage: (data: any) => {
+        const pageCount = (doc as any).internal.getNumberOfPages();
+        doc.setFontSize(7);
+        doc.setTextColor(150, 150, 150);
+        doc.text(
+          `Page ${data.pageNumber} of ${pageCount}`,
+          pageWidth / 2,
+          doc.internal.pageSize.getHeight() - 5,
+          { align: "center" },
+        );
+      },
+    });
+
+    const safeFilter = filterLabel.replace(/[^a-zA-Z0-9_\-]/g, "_");
+    const fileName = `SRGI_Panache_Participants${safeFilter || ""}.pdf`;
+    doc.save(fileName);
+    toast.success("Participants PDF exported!");
   };
 
   // Renders the Event Selection Component reused in both Single and Group flows
@@ -933,33 +1073,39 @@ export function Dashboard() {
                 icon: <Calendar size={18} />,
               },
             ]
-              .filter((tab) => isSuperAdmin || user?.allowedTabs?.includes(tab.id))
+              .filter(
+                (tab) => isSuperAdmin || user?.allowedTabs?.includes(tab.id),
+              )
               .map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id as any);
-                  setStudent(null);
-                  setTokenInput("");
-                  setGroupTokenInput("");
-                  setGroupMembersList([]);
-                  setSelectedEvents([]);
-                  setRegistrationDone(false);
-                }}
-                className={`font-space font-bold text-sm uppercase tracking-widest px-6 py-3 flex items-center gap-2 border-2 transition-all ${
-                  activeTab === tab.id
-                    ? "bg-[#CCFF00] text-[#050505] border-[#050505] shadow-[4px_4px_0px_#050505]"
-                    : "bg-transparent text-[#888] border-transparent hover:text-white"
-                }`}
-              >
-                {tab.icon} {tab.label}
-              </button>
-            ))}
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id as any);
+                    setStudent(null);
+                    setTokenInput("");
+                    setGroupTokenInput("");
+                    setGroupMembersList([]);
+                    setSelectedEvents([]);
+                    setRegistrationDone(false);
+                  }}
+                  className={`font-space font-bold text-sm uppercase tracking-widest px-6 py-3 flex items-center gap-2 border-2 transition-all ${
+                    activeTab === tab.id
+                      ? "bg-[#CCFF00] text-[#050505] border-[#050505] shadow-[4px_4px_0px_#050505]"
+                      : "bg-transparent text-[#888] border-transparent hover:text-white"
+                  }`}
+                >
+                  {tab.icon} {tab.label}
+                </button>
+              ))}
           </div>
 
           {/* ==== OVERVIEW DASHBOARD ==== */}
           {activeTab === "overview" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-8"
+            >
               {loadingStats ? (
                 <div className="flex items-center justify-center p-12">
                   <Loader2 className="animate-spin text-[#CCFF00]" size={48} />
@@ -968,66 +1114,141 @@ export function Dashboard() {
                 <>
                   {/* Top Stat Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} className="bg-[#121212] border-4 p-6" style={{ borderColor: '#FF00FF', boxShadow: '8px 8px 0px #FF00FF' }}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0 }}
+                      className="bg-[#121212] border-4 p-6"
+                      style={{
+                        borderColor: "#FF00FF",
+                        boxShadow: "8px 8px 0px #FF00FF",
+                      }}
+                    >
                       <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-[#FF00FF]">
                           <Users size={24} color="#050505" />
                         </div>
                       </div>
-                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">Total Students</h3>
-                      <p className="font-anton text-4xl text-white mt-2">{stats.totalStudents}</p>
+                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">
+                        Total Students
+                      </h3>
+                      <p className="font-anton text-4xl text-white mt-2">
+                        {stats.totalStudents}
+                      </p>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#121212] border-4 p-6" style={{ borderColor: '#CCFF00', boxShadow: '8px 8px 0px #CCFF00' }}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className="bg-[#121212] border-4 p-6"
+                      style={{
+                        borderColor: "#CCFF00",
+                        boxShadow: "8px 8px 0px #CCFF00",
+                      }}
+                    >
                       <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-[#CCFF00]">
                           <CheckCircle2 size={24} color="#050505" />
                         </div>
                       </div>
-                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">Students Registered</h3>
-                      <p className="font-anton text-4xl text-white mt-2">{stats.processedStudents}</p>
+                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">
+                        Students Registered
+                      </h3>
+                      <p className="font-anton text-4xl text-white mt-2">
+                        {stats.processedStudents}
+                      </p>
                     </motion.div>
 
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#121212] border-4 p-6" style={{ borderColor: '#00FFFF', boxShadow: '8px 8px 0px #00FFFF' }}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 }}
+                      className="bg-[#121212] border-4 p-6"
+                      style={{
+                        borderColor: "#00FFFF",
+                        boxShadow: "8px 8px 0px #00FFFF",
+                      }}
+                    >
                       <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-[#00FFFF]">
                           <Calendar size={24} color="#050505" />
                         </div>
                       </div>
-                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">Total Registrations</h3>
-                      <p className="font-anton text-4xl text-white mt-2">{stats.totalRegistrations}</p>
+                      <h3 className="font-space font-bold uppercase text-[#888] text-xs tracking-widest">
+                        Total Registrations
+                      </h3>
+                      <p className="font-anton text-4xl text-white mt-2">
+                        {stats.totalRegistrations}
+                      </p>
                     </motion.div>
                   </div>
 
                   {/* Registered by Category */}
-                  {stats.categoryCounts && Object.keys(stats.categoryCounts).length > 0 && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
-                      <h3 className="font-anton text-xl text-[#CCFF00] uppercase tracking-wider mb-6">Registered by Category</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {Object.entries(stats.categoryCounts).sort((a: any, b: any) => b[1] - a[1]).map(([category, count]: any) => (
-                          <div key={category} className="bg-[#050505] border-2 border-[#333] p-4 hover:border-[#CCFF00] transition-colors">
-                            <p className="font-space font-bold text-white text-sm uppercase tracking-wider mb-1">{category}</p>
-                            <p className="font-anton text-3xl text-[#CCFF00]">{count}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
+                  {stats.categoryCounts &&
+                    Object.keys(stats.categoryCounts).length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-[#121212] border-4 border-[#333] p-6"
+                        style={{ boxShadow: "8px 8px 0px #333" }}
+                      >
+                        <h3 className="font-anton text-xl text-[#CCFF00] uppercase tracking-wider mb-6">
+                          Registered by Category
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {Object.entries(stats.categoryCounts)
+                            .sort((a: any, b: any) => b[1] - a[1])
+                            .map(([category, count]: any) => (
+                              <div
+                                key={category}
+                                className="bg-[#050505] border-2 border-[#333] p-4 hover:border-[#CCFF00] transition-colors"
+                              >
+                                <p className="font-space font-bold text-white text-sm uppercase tracking-wider mb-1">
+                                  {category}
+                                </p>
+                                <p className="font-anton text-3xl text-[#CCFF00]">
+                                  {count}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </motion.div>
+                    )}
 
                   {/* Registrations by Branch */}
-                  {stats.branchBreakdown && Object.keys(stats.branchBreakdown).length > 0 && (
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="bg-[#121212] border-4 border-[#333] p-6" style={{ boxShadow: '8px 8px 0px #333' }}>
-                      <h3 className="font-anton text-xl text-[#00FFFF] uppercase tracking-wider mb-6">Registrations by Branch</h3>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {Object.entries(stats.branchBreakdown).sort((a: any, b: any) => b[1] - a[1]).map(([branch, count]: any) => (
-                          <div key={branch} className="bg-[#050505] border-2 border-[#333] p-4 hover:border-[#00FFFF] transition-colors">
-                            <p className="font-space font-bold text-white text-xs uppercase tracking-wider mb-1">{branch}</p>
-                            <p className="font-anton text-3xl text-[#00FFFF]">{count}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
+                  {stats.branchBreakdown &&
+                    Object.keys(stats.branchBreakdown).length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="bg-[#121212] border-4 border-[#333] p-6"
+                        style={{ boxShadow: "8px 8px 0px #333" }}
+                      >
+                        <h3 className="font-anton text-xl text-[#00FFFF] uppercase tracking-wider mb-6">
+                          Registrations by Branch
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {Object.entries(stats.branchBreakdown)
+                            .sort((a: any, b: any) => b[1] - a[1])
+                            .map(([branch, count]: any) => (
+                              <div
+                                key={branch}
+                                className="bg-[#050505] border-2 border-[#333] p-4 hover:border-[#00FFFF] transition-colors"
+                              >
+                                <p className="font-space font-bold text-white text-xs uppercase tracking-wider mb-1">
+                                  {branch}
+                                </p>
+                                <p className="font-anton text-3xl text-[#00FFFF]">
+                                  {count}
+                                </p>
+                              </div>
+                            ))}
+                        </div>
+                      </motion.div>
+                    )}
                 </>
               ) : null}
             </motion.div>
@@ -1375,7 +1596,7 @@ export function Dashboard() {
                       placeholder="Search Name, Roll No..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && fetchStudents()}
+                      onKeyDown={(e) => e.key === "Enter" && fetchStudents()}
                       className="w-full bg-[#050505] border-2 border-[#333] py-3 pl-12 pr-4 text-white font-space uppercase text-sm focus:border-[#CCFF00] outline-none"
                     />
                   </div>
@@ -1563,7 +1784,10 @@ export function Dashboard() {
           {activeTab === "registrations" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               {/* Search Bar */}
-              <div className="bg-[#121212] border-4 border-[#333] p-4 flex gap-4 items-center mb-6" style={{ boxShadow: '8px 8px 0px #333' }}>
+              <div
+                className="bg-[#121212] border-4 border-[#333] p-4 flex gap-4 items-center mb-6"
+                style={{ boxShadow: "8px 8px 0px #333" }}
+              >
                 <Search className="text-[#888]" size={20} />
                 <input
                   type="text"
@@ -1629,7 +1853,7 @@ export function Dashboard() {
                     </select>
                   </div>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                   <button
                     onClick={fetchAllRegistrations}
                     className="bg-[#CCFF00] text-[#050505] font-anton px-6 py-3 border-2 border-transparent hover:bg-white transition-colors flex items-center gap-2"
@@ -1642,6 +1866,13 @@ export function Dashboard() {
                     className="bg-[#121212] border-4 border-[#CCFF00] text-[#CCFF00] font-anton px-6 py-2 uppercase hover:bg-[#CCFF00] hover:text-[#050505] transition-all disabled:opacity-50 flex items-center gap-2"
                   >
                     <FileDown size={18} /> Export Excel
+                  </button>
+                  <button
+                    onClick={handleExportParticipantsPDF}
+                    disabled={filteredRegistrations.length === 0}
+                    className="bg-[#121212] border-4 border-red-500 text-red-400 font-anton px-6 py-2 uppercase hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <FileDown size={18} /> Export PDF
                   </button>
                 </div>
               </div>
