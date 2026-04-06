@@ -575,46 +575,64 @@ export function Dashboard() {
     return true;
   });
 
-  // Export filtered registrations as Excel (.xlsx) (without amount)
+  // Export PARTICIPANTS LIST as Excel (.xlsx) (Matching PDF format)
   const handleExportRegistrations = () => {
     if (filteredRegistrations.length === 0) {
       toast.error("No registrations to export");
       return;
     }
+
     const headers = [
-      "Student Name",
-      // "Roll No",
-      "Mobile No",
+      "S.No.",
       "Token",
-      "Type",
-      "Events",
-      "Categories",
-      "Sub Events",
-      "Group Members",
-      // "Total Amount",
-      "Date",
+      "Participant Name",
+      "Mobile No.",
+      "Branch",
     ];
-    const rows = filteredRegistrations.map((r: any) => [
-      r.studentName || "",
-      // r.rollNo || "",
-      r.mobileNo || "",
-      r.token || "",
-      r.isGroup ? "Group" : "Single",
-      (r.events || []).map((e: any) => e.eventName).join(", "),
-      (r.events || []).map((e: any) => e.category).join(", "),
-      (r.events || [])
-        .map((e: any) => e.subEvent || "")
-        .filter(Boolean)
-        .join(", "),
-      (r.groupMembers || []).join(", "),
-      // r.totalAmount || 0,
-      r.processedAt ? new Date(r.processedAt).toLocaleDateString("en-IN") : "",
-    ]);
+
+    // Build flat rows — one row per participant (group members expanded)
+    const rows: (string | number)[][] = [];
+    let srNo = 1;
+
+    filteredRegistrations.forEach((r: any) => {
+      // Leader row
+      rows.push([
+        srNo++,
+        r.token || "-",
+        r.studentName || "-",
+        r.mobileNo || "-",
+        r.branch || "-",
+      ]);
+
+      // Team member rows
+      if (r.isGroup && r.groupMembers && r.groupMembers.length > 0) {
+        r.groupMembers.forEach((memberName: string) => {
+          rows.push([
+            srNo++,
+            r.token || "-",
+            memberName,
+            "-", 
+            r.branch || "-",
+          ]);
+        });
+      }
+    });
 
     // Create worksheet and workbook
     const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    
+    // Auto-size columns (rough estimate)
+    const colWidths = [
+      { wch: 8 },  // S.No
+      { wch: 12 }, // Token
+      { wch: 30 }, // Name
+      { wch: 15 }, // Mobile
+      { wch: 20 }, // Branch
+    ];
+    ws['!cols'] = colWidths;
+
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Registrations");
+    XLSX.utils.book_append_sheet(wb, ws, "Participants");
 
     // Generate valid Excel filename
     const filterLabel =
@@ -623,11 +641,11 @@ export function Dashboard() {
         : regCategoryFilter !== "All"
           ? `_${regCategoryFilter}`
           : "";
-    const fileName = `panache_registrations${filterLabel}.xlsx`;
+    const fileName = `SRGI_Panache_Participants${filterLabel}.xlsx`;
 
     // Trigger download
     XLSX.writeFile(wb, fileName);
-    toast.success("Registrations exported to Excel!");
+    toast.success("Participants exported to Excel!");
   };
 
   // Export PARTICIPANTS LIST as PDF (matching the PARTICIPANTS - Sheet1.pdf format)
@@ -689,65 +707,69 @@ export function Dashboard() {
     });
 
     // --- Header Block ---
-    doc.setFillColor(204, 255, 0); // #CCFF00 lime
-    doc.rect(margin, 10, pageWidth - margin * 2, 1.5, "F");
+    doc.setFillColor(0, 0, 0); 
+    doc.rect(margin, 10, pageWidth - margin * 2, 2, "F"); // Thicker top bar
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(20, 20, 20);
-    doc.text("SRGI PANACHE 2025", pageWidth / 2, 18, { align: "center" });
+    doc.setFontSize(22);
+    doc.setTextColor(0, 0, 0);
+    doc.text("SRGI PANACHE 2k26", pageWidth / 2, 20, { align: "center" });
 
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-    doc.text(`PARTICIPANTS LIST${filterLabel}`, pageWidth / 2, 24, {
+    doc.setFontSize(11);
+    doc.setTextColor(40, 40, 40);
+    doc.text(`PARTICIPANTS LIST${filterLabel}`, pageWidth / 2, 26, {
       align: "center",
     });
 
-    doc.setFontSize(7);
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
-    doc.setTextColor(120, 120, 120);
-    doc.text(`Exported: ${exportDate}`, margin, 30);
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Export: ${exportDate}`, margin, 31);
     doc.text(
-      `Total Participants: ${tableRows.length}`,
+      `Total: ${tableRows.length} Participants`,
       pageWidth - margin,
-      30,
+      31,
       { align: "right" },
     );
 
-    doc.setFillColor(204, 255, 0);
-    doc.rect(margin, 32, pageWidth - margin * 2, 0.5, "F");
+    doc.setFillColor(0, 0, 0);
+    doc.rect(margin, 32.5, pageWidth - margin * 2, 1, "F"); // Thicker separator
 
     // --- Table ---
     autoTable(doc, {
-      startY: 35,
+      startY: 36,
       margin: { left: margin, right: margin },
       head: [["S.No.", "Token", "Participant Name", "Mobile No.", "Branch"]],
       body: tableRows,
       styles: {
         font: "helvetica",
-        fontSize: 7,
-        cellPadding: 1.5,
-        lineColor: [210, 210, 210],
-        lineWidth: 0.1,
+        fontSize: 8,
+        cellPadding: 2,
+        lineColor: [0, 0, 0], // Solid black lines
+        lineWidth: 0.3,      // Thicker lines (mota table)
+        textColor: [0, 0, 0], // Darker text
       },
       headStyles: {
-        fillColor: [20, 20, 20],
+        fillColor: [0, 0, 0],
         textColor: [204, 255, 0],
         fontStyle: "bold",
         halign: "center",
-        fontSize: 8,
+        fontSize: 9,
       },
       columnStyles: {
         0: { halign: "center", cellWidth: 10 },
-        1: { halign: "center", cellWidth: 18 },
-        2: { cellWidth: "auto" },
+        1: { halign: "center", cellWidth: 18, fontStyle: "bold" }, // Bold Token
+        2: { fontStyle: "bold", cellWidth: "auto" },            // Bold Name
         3: { halign: "center", cellWidth: 28 },
         4: { cellWidth: 35 },
       },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240], // Better visibility
+      },
       didDrawPage: (data: any) => {
         const pageCount = (doc as any).internal.getNumberOfPages();
-        doc.setFontSize(6);
-        doc.setTextColor(150, 150, 150);
+        doc.setFontSize(7);
+        doc.setTextColor(50, 50, 50);
         doc.text(
           `Page ${data.pageNumber} of ${pageCount}`,
           pageWidth / 2,
