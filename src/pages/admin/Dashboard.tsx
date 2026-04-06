@@ -719,15 +719,15 @@ export function Dashboard() {
 
     // --- Table ---
     autoTable(doc, {
-      startY: 35,
+      startY: 32,
       margin: { left: margin, right: margin },
       head: [["S.No.", "Token", "Participant Name", "Branch"]],
       body: tableRows,
       styles: {
         font: "helvetica",
-        fontSize: 8,
-        cellPadding: 2,
-        lineColor: [200, 200, 200],
+        fontSize: 7,
+        cellPadding: 1.5,
+        lineColor: [210, 210, 210],
         lineWidth: 0.1,
       },
       headStyles: {
@@ -735,21 +735,25 @@ export function Dashboard() {
         textColor: [204, 255, 0],
         fontStyle: "bold",
         halign: "center",
+        fontSize: 8,
       },
       columnStyles: {
-        0: { halign: "center", cellWidth: 15 },
-        1: { halign: "center", cellWidth: 25 },
+        0: { halign: "center", cellWidth: 12 },
+        1: { halign: "center", cellWidth: 20 },
         2: { cellWidth: "auto" },
-        3: { cellWidth: 40 },
+        3: { cellWidth: 35 },
       },
       didDrawPage: (data: any) => {
         const pageCount = (doc as any).internal.getNumberOfPages();
-        doc.setFontSize(7);
+        if (pageCount > 1) {
+            // Optional: User said one page, but if it overflows, page number shows it
+        }
+        doc.setFontSize(6);
         doc.setTextColor(150, 150, 150);
         doc.text(
           `Page ${data.pageNumber} of ${pageCount}`,
           pageWidth / 2,
-          doc.internal.pageSize.getHeight() - 5,
+          doc.internal.pageSize.getHeight() - 4,
           { align: "center" },
         );
       },
