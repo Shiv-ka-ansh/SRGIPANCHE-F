@@ -642,13 +642,12 @@ export function Dashboard() {
     let srNo = 1;
 
     filteredRegistrations.forEach((r: any) => {
-      const type = r.isGroup ? "Group" : "Solo";
-      
       // Leader row
       tableRows.push([
         srNo++,
         r.token || "-",
         r.studentName || "-",
+        r.mobileNo || "-",
         r.branch || "-",
       ]);
 
@@ -659,6 +658,7 @@ export function Dashboard() {
             srNo++,
             r.token || "-",
             memberName,
+            "-", // Member might not have a mobile no in this view
             r.branch || "-",
           ]);
         });
@@ -680,7 +680,7 @@ export function Dashboard() {
       format: "a4",
     });
     const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 15;
+    const margin = 10; // Slightly smaller margin to fit 5 columns
     const now = new Date();
     const exportDate = now.toLocaleDateString("en-IN", {
       day: "2-digit",
@@ -719,9 +719,9 @@ export function Dashboard() {
 
     // --- Table ---
     autoTable(doc, {
-      startY: 32,
+      startY: 35,
       margin: { left: margin, right: margin },
-      head: [["S.No.", "Token", "Participant Name", "Branch"]],
+      head: [["S.No.", "Token", "Participant Name", "Mobile No.", "Branch"]],
       body: tableRows,
       styles: {
         font: "helvetica",
@@ -738,16 +738,14 @@ export function Dashboard() {
         fontSize: 8,
       },
       columnStyles: {
-        0: { halign: "center", cellWidth: 12 },
-        1: { halign: "center", cellWidth: 20 },
+        0: { halign: "center", cellWidth: 10 },
+        1: { halign: "center", cellWidth: 18 },
         2: { cellWidth: "auto" },
-        3: { cellWidth: 35 },
+        3: { halign: "center", cellWidth: 28 },
+        4: { cellWidth: 35 },
       },
       didDrawPage: (data: any) => {
         const pageCount = (doc as any).internal.getNumberOfPages();
-        if (pageCount > 1) {
-            // Optional: User said one page, but if it overflows, page number shows it
-        }
         doc.setFontSize(6);
         doc.setTextColor(150, 150, 150);
         doc.text(
