@@ -7,8 +7,8 @@ import { MagneticButton } from './MagneticButton';
 
 export function Hero() {
   const calculateTimeLeft = () => {
-    const targetDate = new Date('2026-04-06T09:00:00').getTime();
-    const endDate = new Date('2026-04-10T23:59:59').getTime();
+    const targetDate = new Date('2026-04-28T09:00:00').getTime();
+    const endDate = new Date('2026-04-29T18:00:00').getTime();
     const now = new Date().getTime();
     
     const distance = targetDate - now;
