@@ -332,6 +332,7 @@ export function Register() {
                   <option value="CIVIL">CIVIL</option>
                   <option value="ELECTRONICS">ELECTRONICS</option>
                   <option value="ELECTRICAL">ELECTRICAL</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div>
